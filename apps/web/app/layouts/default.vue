@@ -1,7 +1,15 @@
 <template>
   <v-app>
-    <v-app-bar title="Study Design Simulator" color="primary">
-      <template v-slot:append>
+    <v-app-bar height="80" color="primary">
+      <template #prepend>
+        <AppLogo class="text-white ml-2" height="56" width="56" />
+      </template>
+
+      <v-app-bar-title class="font-weight-bold">
+        <div class="text-h6 text-sm-h5">Study Design Simulator</div>
+      </v-app-bar-title>
+
+      <template #append>
         <v-btn :icon="theme.global.name.value === 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
           @click="toggleTheme"></v-btn>
       </template>

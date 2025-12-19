@@ -8,6 +8,8 @@ export const useStudyDesign = () => useState<StudyDesign>('studyDesign', () => (
 export const useStudyDesignActions = () => {
   const design = useStudyDesign()
 
+  const isPersisted = useState<boolean>('isPersisted', () => false)
+
   const setStudyType = (type: StudyDesign['studyType']) => {
     design.value.studyType = type
   }
@@ -23,6 +25,10 @@ export const useStudyDesignActions = () => {
     design.value.variables?.splice(index, 1)
   }
 
+  const clearVariables = () => {
+    design.value.variables = []
+  }
+
   const updateVariable = (index: number, variable: Variable) => {
     if (design.value.variables) {
       design.value.variables[index] = variable
@@ -35,6 +41,7 @@ export const useStudyDesignActions = () => {
       variables: []
     }
     localStorage.removeItem('study-design-v1')
+    isPersisted.value = false
   }
 
   // Persistence Logic
@@ -42,22 +49,34 @@ export const useStudyDesignActions = () => {
     const saved = localStorage.getItem('study-design-v1')
     if (saved) {
       try {
-        design.value = JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        // Check if different from default
+        const hasVariables = parsed.variables && parsed.variables.length > 0
+        const isNotDefaultType = parsed.studyType !== 'cross-sectional'
+
+        if (hasVariables || isNotDefaultType) {
+          design.value = parsed
+          isPersisted.value = true
+        }
       } catch (e) {
         console.error('Failed to load study design', e)
       }
     }
 
-    // Auto-save
+    // Auto-save and clear persistence flag on change
     watch(() => design.value, (newVal) => {
+      isPersisted.value = false
       localStorage.setItem('study-design-v1', JSON.stringify(newVal))
     }, { deep: true })
   })
 
   return {
+    design,
+    isPersisted,
     setStudyType,
     addVariable,
     removeVariable,
+    clearVariables,
     updateVariable,
     resetDesign
   }
