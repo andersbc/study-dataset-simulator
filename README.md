@@ -1,4 +1,4 @@
-# Study Dataset Simulator (WORK IN PROGRESS)
+# Study Dataset Simulator (WORK IN PROGRESS) 
 
 A web-based tool for designing and simulating study datasets. This application allows users to define variables (Continuous, Nominal, Ordinal) and their distributions, enabling the generation of synthetic datasets for research and testing purposes.
 
