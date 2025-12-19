@@ -29,10 +29,36 @@ export const useStudyDesignActions = () => {
     }
   }
 
+  const resetDesign = () => {
+    design.value = {
+      studyType: 'cross-sectional',
+      variables: []
+    }
+    localStorage.removeItem('study-design-v1')
+  }
+
+  // Persistence Logic
+  onMounted(() => {
+    const saved = localStorage.getItem('study-design-v1')
+    if (saved) {
+      try {
+        design.value = JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to load study design', e)
+      }
+    }
+
+    // Auto-save
+    watch(() => design.value, (newVal) => {
+      localStorage.setItem('study-design-v1', JSON.stringify(newVal))
+    }, { deep: true })
+  })
+
   return {
     setStudyType,
     addVariable,
     removeVariable,
-    updateVariable
+    updateVariable,
+    resetDesign
   }
 }

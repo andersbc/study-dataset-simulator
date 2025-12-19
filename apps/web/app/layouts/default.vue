@@ -39,4 +39,20 @@ onMounted(() => {
   })
 })
 
+
 </script>
+
+<style>
+/* Global styles */
+.soft-shadow_inviting {
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1) !important;
+  /* Reduced spread (40->20) and opacity */
+  /* Border removed for cleaner "floating" look */
+}
+
+/* Ensure dark mode shadow is visible but subtle */
+.v-theme--dark .soft-shadow_inviting {
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.4) !important;
+  /* Reduced opacity */
+}
+</style>

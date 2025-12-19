@@ -1,43 +1,66 @@
 <template>
-  <v-card class="mb-4">
-    <v-card-title class="d-flex justify-space-between align-center">
-      Variables
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openDialog">Add Variable</v-btn>
-    </v-card-title>
-    <v-card-text>
-      <v-list v-if="design.variables && design.variables.length > 0">
-        <ClientOnly>
-          <draggable v-model="design.variables" handle=".drag-handle" item-key="name" ghost-class="ghost-card"
-            drag-class="drag-card">
-            <template #item="{ element: variable, index }">
-              <v-list-item :title="variable.name" :subtitle="variable.dataType">
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-drag" class="drag-handle cursor-move mr-2"></v-icon>
-                </template>
-                <template v-slot:append>
-                  <v-btn variant="text" color="primary" icon @click="openEditDialog(index)">
+  <div class="mb-12">
+    <div class="d-flex justify-space-between align-center mb-4">
+      <div class="text-h5 font-weight-medium">Variables</div>
+      <div class="d-flex">
+        <v-btn color="secondary" variant="flat" prepend-icon="mdi-playlist-plus" @click="openInstrumentDialog">Add
+          Instrument</v-btn>
+        <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" class="ml-6" @click="openDialog">Add
+          Variable</v-btn>
+      </div>
+    </div>
+
+    <div v-if="design.variables && design.variables.length > 0">
+      <ClientOnly>
+        <draggable v-model="design.variables" handle=".drag-handle" item-key="name" ghost-class="ghost-card"
+          drag-class="drag-card">
+          <template #item="{ element: variable, index }">
+            <v-card class="mb-3 pa-3 variable-card">
+              <div class="d-flex align-center">
+                <v-icon icon="mdi-drag" class="drag-handle cursor-move mr-4 text-medium-emphasis"></v-icon>
+
+                <div class="flex-grow-1">
+                  <div class="d-flex align-center">
+                    <v-icon v-if="variable.kind === 'instrument'" icon="mdi-playlist-check" class="mr-2"
+                      color="secondary" size="small"></v-icon>
+                    <div class="text-subtitle-1 font-weight-medium">{{ variable.name }}</div>
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ variable.kind === 'instrument' ? `Instrument (${variable.items?.length || 0} items) •
+                    ${variable.dataType}` : variable.dataType }}
+                  </div>
+                </div>
+
+                <div class="d-flex">
+                  <v-btn variant="text" size="small" color="primary" icon @click="openEditDialog(index)">
                     <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">Edit Variable</v-tooltip>
+                    <v-tooltip activator="parent" location="top">Edit</v-tooltip>
                   </v-btn>
-                  <v-btn variant="text" color="error" icon @click="removeVariable(index)">
+                  <v-btn variant="text" size="small" color="error" icon @click="removeVariable(index)">
                     <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">Delete Variable</v-tooltip>
+                    <v-tooltip activator="parent" location="top">Delete</v-tooltip>
                   </v-btn>
-                </template>
-              </v-list-item>
-            </template>
-          </draggable>
-        </ClientOnly>
-      </v-list>
-      <v-alert v-else type="info" variant="tonal">No variables defined yet.</v-alert>
-    </v-card-text>
+                </div>
+              </div>
+            </v-card>
+          </template>
+        </draggable>
+      </ClientOnly>
+    </div>
+    <v-alert v-else type="info" variant="tonal" class="mt-2">
+      No variables yet. Click "Add Variable" to start.
+    </v-alert>
 
     <v-dialog v-model="dialog" max-width="500">
       <v-card>
-        <v-card-title>{{ editingIndex !== null ? 'Edit Variable' : 'Add Variable' }}</v-card-title>
+        <v-card-title>
+          {{ editingIndex !== null ? (newVar.kind === 'instrument' ? 'Edit Instrument' : 'Edit Variable') : (newVar.kind
+            ===
+            'instrument' ? 'Add Instrument' : 'Add Variable') }}
+        </v-card-title>
         <v-card-text>
-          <v-text-field v-model="newVar.name" label="Name" variant="outlined" class="mb-2"
-            :rules="[rules.variableName]"></v-text-field>
+          <v-text-field v-model="newVar.name" :label="newVar.kind === 'instrument' ? 'Instrument Name' : 'Name'"
+            variant="outlined" class="mb-2" :rules="[rules.variableName]"></v-text-field>
           <v-select v-model="newVar.dataType" :items="dataTypeOptions" label="Data Type" variant="outlined"></v-select>
 
           <v-select v-if="newVar.dataType" v-model="newVar.distribution.type" :items="availableDistributions"
@@ -72,7 +95,10 @@
           <template v-if="[VAR_NOMINAL, VAR_ORDINAL].includes(newVar.dataType || '')">
             <div class="mt-4">
               <div class="d-flex justify-space-between align-center mb-2">
-                <div class="text-subtitle-1">Categories (Min 2)</div>
+                <div class="text-subtitle-1">
+                  {{ newVar.kind === 'instrument' ? 'Shared Response Scale' : 'Categories' }}
+                  <span class="text-caption text-medium-emphasis">(Min 2)</span>
+                </div>
                 <v-btn v-if="newVar.dataType === VAR_ORDINAL" size="small" variant="text" color="primary"
                   prepend-icon="mdi-creation" @click="generateLevels">
                   Generate (0-4)
@@ -94,7 +120,7 @@
                   <draggable v-model="newVar.categories" handle=".cat-drag-handle" item-key="self"
                     ghost-class="ghost-item" drag-class="drag-item">
                     <template #item="{ element: category, index }">
-                      <div class="d-flex align-center py-2 px-2 category-item border-b">
+                      <div class="d-flex align-center py-2 px-2 category-item">
                         <v-icon icon="mdi-drag" class="cat-drag-handle cursor-move mr-2 text-medium-emphasis"></v-icon>
 
                         <!-- Ordinal Index -->
@@ -125,6 +151,54 @@
               </div>
             </div>
           </template>
+
+          <template v-if="newVar.kind === 'instrument'">
+            <div class="mt-4 border-t pt-4">
+              <div class="text-h6 mb-2">Instrument Items</div>
+
+              <v-row align="center" dense>
+                <v-col cols="4">
+                  <v-text-field v-model="itemPrefix" label="Prefix (e.g. Q)" density="compact" hide-details
+                    variant="outlined"></v-text-field>
+                </v-col>
+                <v-col cols="3">
+                  <v-text-field v-model.number="itemCount" type="number" label="Count" density="compact" hide-details
+                    variant="outlined"></v-text-field>
+                </v-col>
+                <v-col cols="5">
+                  <v-btn color="secondary" block prepend-icon="mdi-creation" @click="generateItems">Generate
+                    Items</v-btn>
+                </v-col>
+              </v-row>
+
+              <div class="mt-3 item-list-container border rounded pa-2" v-if="newVar.items && newVar.items.length > 0">
+                <draggable v-model="newVar.items" handle=".item-drag-handle" item-key="id" ghost-class="ghost-item">
+                  <template #item="{ element: item, index }">
+                    <div class="d-flex align-center py-1 item-row">
+                      <v-icon icon="mdi-drag" class="item-drag-handle cursor-move mr-2 text-medium-emphasis"
+                        size="small"></v-icon>
+                      <v-text-field v-model="item.name" density="compact" variant="plain" hide-details
+                        class="flex-grow-1"></v-text-field>
+
+                      <v-tooltip location="top" text="Reverse Keyed">
+                        <template v-slot:activator="{ props }">
+                          <v-btn v-bind="props" :color="item.reverse ? 'warning' : 'default'"
+                            :variant="item.reverse ? 'flat' : 'text'" icon="mdi-swap-vertical" size="x-small"
+                            density="comfortable" @click="item.reverse = !item.reverse"></v-btn>
+                        </template>
+                      </v-tooltip>
+
+                      <v-btn icon="mdi-close" variant="text" size="small" color="error" density="comfortable"
+                        @click="newVar.items.splice(index, 1)"></v-btn>
+                    </div>
+                  </template>
+                </draggable>
+              </div>
+              <v-alert v-else type="info" variant="text" density="compact" class="mt-2">
+                No items generated yet.
+              </v-alert>
+            </div>
+          </template>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -133,7 +207,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -141,7 +215,8 @@ import { type } from 'arktype'
 import draggable from 'vuedraggable'
 import {
   type Variable, type VariableType, ValidDistributions, DefaultDistributions, CategoryList, PositiveNumber, SafeNumber, VariableName,
-  VAR_CONTINUOUS, VAR_NOMINAL, VAR_ORDINAL, DIST_NORMAL, DIST_UNIFORM
+  VAR_CONTINUOUS, VAR_NOMINAL, VAR_ORDINAL, DIST_NORMAL, DIST_UNIFORM,
+  type Instrument, type InstrumentItem, InstrumentSchema
 } from '@sim-site/shared'
 
 const design = useStudyDesign()
@@ -258,6 +333,21 @@ const generateLevels = () => {
   newVar.value.categories = ['0', '1', '2', '3', '4']
 }
 
+const itemPrefix = ref('Q')
+const itemCount = ref(5)
+
+const generateItems = () => {
+  if (!newVar.value.items) newVar.value.items = []
+
+  for (let i = 1; i <= itemCount.value; i++) {
+    newVar.value.items.push({
+      id: crypto.randomUUID(),
+      name: `${itemPrefix.value}${i}`,
+      reverse: false
+    })
+  }
+}
+
 const openEditDialog = (index: number) => {
   const variable = design.value.variables?.[index]
   if (!variable) return
@@ -269,6 +359,8 @@ const openEditDialog = (index: number) => {
 
 const openDialog = () => {
   newVar.value = {
+    // @ts-ignore
+    kind: 'variable',
     name: '',
     dataType: VAR_CONTINUOUS,
     distribution: { type: DIST_NORMAL, mean: 0, stdDev: 1 },
@@ -278,16 +370,30 @@ const openDialog = () => {
   dialog.value = true
 }
 
+const openInstrumentDialog = () => {
+  newVar.value = {
+    kind: 'instrument',
+    name: '',
+    dataType: VAR_ORDINAL, // Default to Ordinal for instruments
+    distribution: { type: DIST_NORMAL, mean: 0, stdDev: 1 },
+    categories: [],
+    items: []
+  }
+  editingIndex.value = null
+  dialog.value = true
+}
+
 const save = () => {
   if (isValid.value) {
     if (editingIndex.value !== null) {
-      updateVariable(editingIndex.value, newVar.value as Variable)
+      updateVariable(editingIndex.value, newVar.value as Variable | Instrument)
     } else {
-      addVariable(newVar.value as Variable)
+      addVariable(newVar.value as Variable | Instrument)
     }
     dialog.value = false
   }
 }
+
 </script>
 
 <style scoped>
@@ -314,9 +420,5 @@ const save = () => {
 .drag-item {
   background: rgb(var(--v-theme-surface));
   box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
-}
-
-.category-item:last-child {
-  border-bottom: none !important;
 }
 </style>

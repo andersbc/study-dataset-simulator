@@ -13,13 +13,7 @@
     </v-row>
 
     <StudyConfig />
-
-    <v-divider class="my-6"></v-divider>
-
     <VariableManager />
-
-    <v-divider class="my-6"></v-divider>
-
     <JsonPreview />
   </v-container>
 </template>

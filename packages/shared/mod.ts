@@ -72,9 +72,39 @@ export const VariableSchema = type({
   distribution: CategoricalUniform
 });
 
+export const InstrumentItem = type({
+  id: "string", // Unique ID for keying
+  name: "string", // e.g. "Q1"
+  reverse: "boolean"
+})
+
+export type InstrumentItem = typeof InstrumentItem.infer
+
+export const InstrumentSchema = type({
+  kind: "'instrument'",
+  name: "string", // Instrument name e.g. "Anxiety Scale"
+  dataType: `\'${VAR_ORDINAL}\'`, // Instruments are typically ordinal/nominal
+  categories: CategoryList,
+  distribution: NormalDistribution.or(CategoricalUniform),
+  items: InstrumentItem.array()
+}).or({
+  kind: "'instrument'",
+  name: "string",
+  dataType: `\'${VAR_NOMINAL}\'`,
+  categories: CategoryList,
+  distribution: CategoricalUniform,
+  items: InstrumentItem.array()
+})
+
+export type Instrument = typeof InstrumentSchema.infer
+
+// Variable or Instrument
+export const StudyNodeSchema = VariableSchema.or(InstrumentSchema)
+export type StudyNode = typeof StudyNodeSchema.infer
+
 export const StudyDesignSchema = type({
   studyType: "'cross-sectional' | 'cohort' | 'case-control'",
-  "variables?": VariableSchema.array()
+  "variables?": StudyNodeSchema.array()
 });
 
 export type StudyDesign = typeof StudyDesignSchema.infer;
