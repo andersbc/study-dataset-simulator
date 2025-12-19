@@ -15,8 +15,14 @@
                   <v-icon icon="mdi-drag" class="drag-handle cursor-move mr-2"></v-icon>
                 </template>
                 <template v-slot:append>
-                  <v-btn icon="mdi-pencil" variant="text" color="primary" @click="openEditDialog(index)"></v-btn>
-                  <v-btn icon="mdi-delete" variant="text" color="error" @click="removeVariable(index)"></v-btn>
+                  <v-btn variant="text" color="primary" icon @click="openEditDialog(index)">
+                    <v-icon>mdi-pencil</v-icon>
+                    <v-tooltip activator="parent" location="top">Edit Variable</v-tooltip>
+                  </v-btn>
+                  <v-btn variant="text" color="error" icon @click="removeVariable(index)">
+                    <v-icon>mdi-delete</v-icon>
+                    <v-tooltip activator="parent" location="top">Delete Variable</v-tooltip>
+                  </v-btn>
                 </template>
               </v-list-item>
             </template>
@@ -32,8 +38,7 @@
         <v-card-text>
           <v-text-field v-model="newVar.name" label="Name" variant="outlined" class="mb-2"
             :rules="[rules.variableName]"></v-text-field>
-          <v-select v-model="newVar.dataType" :items="[VAR_CONTINUOUS, VAR_NOMINAL, VAR_ORDINAL]" label="Data Type"
-            variant="outlined"></v-select>
+          <v-select v-model="newVar.dataType" :items="dataTypeOptions" label="Data Type" variant="outlined"></v-select>
 
           <v-select v-if="newVar.dataType" v-model="newVar.distribution.type" :items="availableDistributions"
             label="Distribution" variant="outlined" class="mt-2"></v-select>
@@ -66,14 +71,22 @@
 
           <template v-if="[VAR_NOMINAL, VAR_ORDINAL].includes(newVar.dataType || '')">
             <div class="mt-4">
-              <div class="text-subtitle-1 mb-2">Categories (Min 2)</div>
+              <div class="d-flex justify-space-between align-center mb-2">
+                <div class="text-subtitle-1">Categories (Min 2)</div>
+                <v-btn v-if="newVar.dataType === VAR_ORDINAL" size="small" variant="text" color="primary"
+                  prepend-icon="mdi-creation" @click="generateLevels">
+                  Generate (0-4)
+                </v-btn>
+              </div>
 
               <div class="d-flex gap-2 mb-2">
                 <v-text-field v-model="newCategory" label="Add Category" variant="outlined" density="compact"
                   :error-messages="newVar.categories?.includes(newCategory) ? 'Category already exists' : ''"
                   hide-details="auto" @keydown.enter.prevent="addCategory"></v-text-field>
                 <v-btn color="primary" icon="mdi-plus" size="small" class="mt-1 ml-2" @click="addCategory"
-                  :disabled="!newCategory || newVar.categories?.includes(newCategory)"></v-btn>
+                  :disabled="!newCategory || newVar.categories?.includes(newCategory)">
+                  <v-tooltip activator="parent" location="top">Add Category</v-tooltip>
+                </v-btn>
               </div>
 
               <ClientOnly>
@@ -95,7 +108,9 @@
                           :error-messages="isCategoryDuplicate(newVar.categories[index], index) ? 'Duplicate' : ''"></v-text-field>
 
                         <v-btn icon="mdi-close" variant="text" size="small" color="error" density="comfortable"
-                          @click="removeCategory(index)"></v-btn>
+                          @click="removeCategory(index)">
+                          <v-tooltip activator="parent" location="top">Remove Category</v-tooltip>
+                        </v-btn>
                       </div>
                     </template>
                   </draggable>
@@ -131,6 +146,12 @@ import {
 
 const design = useStudyDesign()
 const { addVariable, removeVariable, updateVariable } = useStudyDesignActions()
+
+const dataTypeOptions = [
+  { title: 'Continuous', value: VAR_CONTINUOUS, props: { prependIcon: 'mdi-chart-bell-curve' } },
+  { title: 'Ordinal', value: VAR_ORDINAL, props: { prependIcon: 'mdi-sort-ascending' } },
+  { title: 'Nominal', value: VAR_NOMINAL, props: { prependIcon: 'mdi-tag-outline' } }
+]
 
 const dialog = ref(false)
 // Initialize with a valid default state (Continuous -> Normal)
@@ -231,6 +252,10 @@ const addCategory = () => {
 
 const removeCategory = (index: number) => {
   newVar.value.categories?.splice(index, 1)
+}
+
+const generateLevels = () => {
+  newVar.value.categories = ['0', '1', '2', '3', '4']
 }
 
 const openEditDialog = (index: number) => {

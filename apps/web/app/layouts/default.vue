@@ -20,6 +20,23 @@ import { useTheme } from 'vuetify'
 const theme = useTheme()
 
 const toggleTheme = () => {
-  theme.global.name.value = theme.global.name.value === 'dark' ? 'light' : 'dark'
+  const newVal = theme.global.name.value === 'dark' ? 'light' : 'dark'
+  theme.global.name.value = newVal
+  localStorage.setItem('theme', newVal)
 }
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    theme.global.name.value = savedTheme
+  }
+
+  // Listen for changes in other tabs
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'theme' && event.newValue) {
+      theme.global.name.value = event.newValue
+    }
+  })
+})
+
 </script>
