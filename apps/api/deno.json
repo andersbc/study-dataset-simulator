@@ -1,0 +1,13 @@
+{
+  "name": "@sim-site/api",
+  "version": "0.1.0",
+  "tasks": {
+    "dev": "deno run --watch --allow-net main.ts"
+  },
+  "exports": "./main.ts",
+  "imports": {
+    "@sim-site/shared": "../../packages/shared/mod.ts",
+    "hono": "jsr:@hono/hono@^4.11.1",
+    "arktype": "npm:arktype"
+  }
+}

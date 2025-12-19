@@ -1,0 +1,8 @@
+{
+  "name": "@sim-site/shared",
+  "version": "0.1.0",
+  "imports": {
+    "arktype": "npm:arktype"
+  },
+  "exports": "./mod.ts"
+}

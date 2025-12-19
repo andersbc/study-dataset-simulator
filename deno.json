@@ -1,0 +1,9 @@
+{
+  "workspace": [
+    "./apps/api",
+    "./packages/shared"
+  ],
+  "tasks": {
+    "dev:api": "deno task --cwd apps/api dev"
+  }
+}
