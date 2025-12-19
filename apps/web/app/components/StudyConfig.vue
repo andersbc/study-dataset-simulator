@@ -1,10 +1,11 @@
 <template>
   <div class="mb-12">
-    <div class="text-h5 font-weight-medium mb-4">Study Configuration</div>
-    <v-card class="pa-4">
-      <v-select v-model="design.studyType" :items="studyTypes" label="Study Type" variant="outlined"
-        hide-details></v-select>
-    </v-card>
+    <div class="mb-12">
+      <AppCard title="Study Configuration">
+        <v-select v-model="design.studyType" :items="studyTypes" label="Study Type" variant="outlined"
+          hide-details></v-select>
+      </AppCard>
+    </div>
   </div>
 </template>
 

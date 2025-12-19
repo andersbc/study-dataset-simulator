@@ -1,62 +1,70 @@
 <template>
   <div class="mb-12">
-    <div class="d-flex justify-space-between align-center mb-4">
-      <div class="text-h5 font-weight-medium">Variables</div>
-      <div class="d-flex">
+
+    <AppCard>
+      <template #title>
+        <div class="d-flex justify-space-between align-center">
+          <div class="text-h5 font-weight-medium">Variables</div>
+        </div>
+      </template>
+
+      <div v-if="design.variables && design.variables.length > 0">
+        <ClientOnly>
+          <draggable v-model="design.variables" handle=".drag-handle" item-key="name" ghost-class="ghost-card"
+            fallback-class="drag-card" :force-fallback="true">
+            <template #item="{ element: variable, index }">
+              <v-card class="mb-3 pa-3 variable-card" variant="outlined">
+                <div class="d-flex align-center">
+                  <v-icon icon="mdi-drag" size="48" class="drag-handle cursor-move mr-4 text-medium-emphasis"></v-icon>
+
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-center">
+                      <v-icon v-if="variable.kind === 'instrument'" icon="mdi-playlist-check" class="mr-2"
+                        color="secondary" size="small"></v-icon>
+                      <div class="text-subtitle-1 font-weight-medium">{{ variable.name }}</div>
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ variable.kind === 'instrument' ? `Instrument (${variable.items?.length || 0} items) •
+                      ${variable.dataType}` : variable.dataType }}
+                    </div>
+                  </div>
+
+                  <div class="d-flex">
+                    <v-btn variant="text" size="small" color="primary" icon @click="openEditDialog(index)">
+                      <v-icon>mdi-pencil</v-icon>
+                      <v-tooltip activator="parent" location="top">Edit</v-tooltip>
+                    </v-btn>
+                    <v-btn variant="text" size="small" color="error" icon @click="removeVariable(index)">
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">Delete</v-tooltip>
+                    </v-btn>
+                  </div>
+                </div>
+              </v-card>
+            </template>
+          </draggable>
+        </ClientOnly>
+      </div>
+      <v-alert v-else type="info" variant="tonal" class="mt-2">
+        No variables yet. Click "Add Variable" to start.
+      </v-alert>
+
+      <template #actions>
+        <v-spacer></v-spacer>
         <v-btn color="secondary" variant="flat" prepend-icon="mdi-playlist-plus" @click="openInstrumentDialog">Add
           Instrument</v-btn>
         <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" class="ml-6" @click="openDialog">Add
           Variable</v-btn>
-      </div>
-    </div>
-
-    <div v-if="design.variables && design.variables.length > 0">
-      <ClientOnly>
-        <draggable v-model="design.variables" handle=".drag-handle" item-key="name" ghost-class="ghost-card"
-          drag-class="drag-card">
-          <template #item="{ element: variable, index }">
-            <v-card class="mb-3 pa-3 variable-card">
-              <div class="d-flex align-center">
-                <v-icon icon="mdi-drag" class="drag-handle cursor-move mr-4 text-medium-emphasis"></v-icon>
-
-                <div class="flex-grow-1">
-                  <div class="d-flex align-center">
-                    <v-icon v-if="variable.kind === 'instrument'" icon="mdi-playlist-check" class="mr-2"
-                      color="secondary" size="small"></v-icon>
-                    <div class="text-subtitle-1 font-weight-medium">{{ variable.name }}</div>
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ variable.kind === 'instrument' ? `Instrument (${variable.items?.length || 0} items) •
-                    ${variable.dataType}` : variable.dataType }}
-                  </div>
-                </div>
-
-                <div class="d-flex">
-                  <v-btn variant="text" size="small" color="primary" icon @click="openEditDialog(index)">
-                    <v-icon>mdi-pencil</v-icon>
-                    <v-tooltip activator="parent" location="top">Edit</v-tooltip>
-                  </v-btn>
-                  <v-btn variant="text" size="small" color="error" icon @click="removeVariable(index)">
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">Delete</v-tooltip>
-                  </v-btn>
-                </div>
-              </div>
-            </v-card>
-          </template>
-        </draggable>
-      </ClientOnly>
-    </div>
-    <v-alert v-else type="info" variant="tonal" class="mt-2">
-      No variables yet. Click "Add Variable" to start.
-    </v-alert>
+      </template>
+    </AppCard>
 
     <v-dialog v-model="dialog" max-width="500">
       <v-card>
         <v-card-title>
-          {{ editingIndex !== null ? (newVar.kind === 'instrument' ? 'Edit Instrument' : 'Edit Variable') : (newVar.kind
-            ===
-            'instrument' ? 'Add Instrument' : 'Add Variable') }}
+          {{ editingIndex !== null ? (newVar.kind === 'instrument' ? 'Edit Instrument' : 'Edit Variable') :
+            (newVar.kind
+              ===
+              'instrument' ? 'Add Instrument' : 'Add Variable') }}
         </v-card-title>
         <v-card-text>
           <v-text-field v-model="newVar.name" :label="newVar.kind === 'instrument' ? 'Instrument Name' : 'Name'"
@@ -203,7 +211,8 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="secondary" variant="text" @click="dialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="save" :disabled="!isValid">{{ editingIndex !== null ? 'Save' : 'Add' }}</v-btn>
+          <v-btn color="primary" @click="save" :disabled="!isValid">{{ editingIndex !== null ? 'Save' : 'Add'
+          }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -402,11 +411,11 @@ const save = () => {
 }
 
 .ghost-card {
-  opacity: 0;
+  opacity: 0.5;
 }
 
 .drag-card {
-  opacity: 1;
+  opacity: 1 !important;
   background: rgb(var(--v-theme-surface));
   box-shadow: 0px 5px 5px -3px var(--v-shadow-key-umbra-opacity, rgba(0, 0, 0, 0.2)), 0px 8px 10px 1px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.14)), 0px 3px 14px 2px var(--v-shadow-key-ambient-opacity, rgba(0, 0, 0, 0.12));
 }
