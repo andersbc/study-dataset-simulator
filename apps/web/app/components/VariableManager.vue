@@ -97,7 +97,8 @@ const startAddInstrument = () => {
     dataType: VAR_ORDINAL,
     distribution: { type: DIST_NORMAL, mean: 0, stdDev: 1 },
     categories: [],
-    items: []
+    items: [],
+    scales: []
   }
 
   addVariable(defaultInstrument as Instrument)

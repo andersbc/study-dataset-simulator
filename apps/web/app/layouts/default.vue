@@ -6,7 +6,7 @@
       </template>
 
       <v-app-bar-title class="font-weight-bold">
-        <div class="text-h6 text-sm-h5">Study Design Simulator</div>
+        <div class="text-h6 text-sm-h5">Study Dataset Simulator</div>
       </v-app-bar-title>
 
       <template #append>
@@ -31,7 +31,12 @@ const toggleTheme = () => {
   const newVal = theme.global.name.value === 'dark' ? 'light' : 'dark'
   theme.global.name.value = newVal
   localStorage.setItem('theme', newVal)
+  theme.global.name.value = newVal
+  localStorage.setItem('theme', newVal)
 }
+
+useStudyPersistence()
+
 
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme')

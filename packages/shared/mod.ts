@@ -57,15 +57,18 @@ export const DefaultDistributions: {
 };
 
 export const VariableSchema = type({
+  kind: "'variable'",
   name: VariableName,
   dataType: `'${VAR_CONTINUOUS}'`,
   distribution: NormalDistribution.or(UniformDistribution)
 }).or({
+  kind: "'variable'",
   name: VariableName,
   dataType: `'${VAR_ORDINAL}'`,
   categories: CategoryList,
   distribution: NormalDistribution.or(CategoricalUniform)
 }).or({
+  kind: "'variable'",
   name: VariableName,
   dataType: `'${VAR_NOMINAL}'`,
   categories: CategoryList,
@@ -74,11 +77,25 @@ export const VariableSchema = type({
 
 export const InstrumentItem = type({
   id: "string", // Unique ID for keying
-  name: "string", // e.g. "Q1"
-  reverse: "boolean"
+  name: "string" // e.g. "Q1"
 })
 
 export type InstrumentItem = typeof InstrumentItem.infer
+
+export const ScaleItem = type({
+  itemId: "string",
+  reverse: "boolean"
+})
+
+export type ScaleItem = typeof ScaleItem.infer
+
+export const ScaleSchema = type({
+  id: "string",
+  name: "string",
+  items: ScaleItem.array()
+})
+
+export type Scale = typeof ScaleSchema.infer
 
 export const InstrumentSchema = type({
   kind: "'instrument'",
@@ -86,14 +103,16 @@ export const InstrumentSchema = type({
   dataType: `\'${VAR_ORDINAL}\'`, // Instruments are typically ordinal/nominal
   categories: CategoryList,
   distribution: NormalDistribution.or(CategoricalUniform),
-  items: InstrumentItem.array()
+  items: InstrumentItem.array(),
+  "scales?": ScaleSchema.array()
 }).or({
   kind: "'instrument'",
   name: "string",
   dataType: `\'${VAR_NOMINAL}\'`,
   categories: CategoryList,
   distribution: CategoricalUniform,
-  items: InstrumentItem.array()
+  items: InstrumentItem.array(),
+  "scales?": ScaleSchema.array()
 })
 
 export type Instrument = typeof InstrumentSchema.infer
