@@ -13,6 +13,9 @@ WORKDIR /app/apps/web
 # Install dependencies
 RUN npm install
 
+# Increase memory limit for build (uses swap if needed)
+ENV NODE_OPTIONS="--max_old_space_size=2048"
+
 # Build the application
 RUN npm run build
 
