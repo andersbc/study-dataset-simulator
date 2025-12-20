@@ -48,10 +48,11 @@ We have created `.github/workflows/deploy.yml`. For it to work, you need to add 
             ```
 
 ## 3. How it Works
-
-1.  You push code to `main`.
-2.  GitHub Action logs into your Droplet via SSH.
-3.  It runs:
+ 
+ 1.  You push code to `main`.
+ 2.  **Go to GitHub**: Actions tab > "Deploy to DigitalOcean" > "Run workflow".
+ 3.  GitHub Action logs into your Droplet via SSH.
+ 4.  It runs:
     *   `git pull` (updates code)
     *   `docker compose up --build -d` (rebuilds and restarts containers)
 
