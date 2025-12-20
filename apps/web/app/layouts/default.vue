@@ -10,6 +10,11 @@
       </v-app-bar-title>
 
       <template #append>
+        <v-btn icon="mdi-undo" variant="text" :disabled="!canUndo" @click="undo" v-tooltip="'Undo'"
+          class="mr-2"></v-btn>
+        <v-btn icon="mdi-redo" variant="text" :disabled="!canRedo" @click="redo" v-tooltip="'Redo'"
+          class="mr-2"></v-btn>
+        <v-divider vertical class="mx-2 my-auto" style="height: 24px"></v-divider>
         <v-btn :icon="theme.global.name.value === 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
           @click="toggleTheme"></v-btn>
       </template>
@@ -24,6 +29,9 @@
 
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
+import { useStudyHistory } from '~/composables/useStudyDesign'
+
+const { undo, redo, canUndo, canRedo } = useStudyHistory()
 
 const theme = useTheme()
 

@@ -121,9 +121,23 @@ export type Instrument = typeof InstrumentSchema.infer
 export const StudyNodeSchema = VariableSchema.or(InstrumentSchema)
 export type StudyNode = typeof StudyNodeSchema.infer
 
+// Effects
+export const EFFECT_CORRELATION = 'correlation';
+
+export const EffectSchema = type({
+  id: "string", // Unique ID
+  source: "string", // Variable name
+  target: "string", // Variable name
+  type: `'${EFFECT_CORRELATION}'`,
+  coefficient: type("-1 <= number <= 1")
+});
+
+export type Effect = typeof EffectSchema.infer;
+
 export const StudyDesignSchema = type({
   studyType: "'cross-sectional' | 'cohort' | 'case-control'",
-  "variables?": StudyNodeSchema.array()
+  "variables?": StudyNodeSchema.array(),
+  "effects?": EffectSchema.array()
 });
 
 export type StudyDesign = typeof StudyDesignSchema.infer;
