@@ -1,0 +1,47 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "jsr:@hono/hono@^4.11.1": "jsr:@hono/hono@4.11.1",
+      "npm:arktype": "npm:arktype@2.1.29"
+    },
+    "jsr": {
+      "@hono/hono@4.11.1": {
+        "integrity": "28bb28c7322a1379e7132af05ef76aef09f86bb8cdd7077c67e004dea288ac0d"
+      }
+    },
+    "npm": {
+      "@ark/schema@0.56.0": {
+        "integrity": "sha512-ECg3hox/6Z/nLajxXqNhgPtNdHWC9zNsDyskwO28WinoFEnWow4IsERNz9AnXRhTZJnYIlAJ4uGn3nlLk65vZA==",
+        "dependencies": {
+          "@ark/util": "@ark/util@0.56.0"
+        }
+      },
+      "@ark/util@0.56.0": {
+        "integrity": "sha512-BghfRC8b9pNs3vBoDJhcta0/c1J1rsoS1+HgVUreMFPdhz/CRAKReAu57YEllNaSy98rWAdY1gE+gFup7OXpgA==",
+        "dependencies": {}
+      },
+      "arkregex@0.0.5": {
+        "integrity": "sha512-ncYjBdLlh5/QnVsAA8De16Tc9EqmYM7y/WU9j+236KcyYNUXogpz3sC4ATIZYzzLxwI+0sEOaQLEmLmRleaEXw==",
+        "dependencies": {
+          "@ark/util": "@ark/util@0.56.0"
+        }
+      },
+      "arktype@2.1.29": {
+        "integrity": "sha512-jyfKk4xIOzvYNayqnD8ZJQqOwcrTOUbIU4293yrzAjA3O1dWh61j71ArMQ6tS/u4pD7vabSPe7nG3RCyoXW6RQ==",
+        "dependencies": {
+          "@ark/schema": "@ark/schema@0.56.0",
+          "@ark/util": "@ark/util@0.56.0",
+          "arkregex": "arkregex@0.0.5"
+        }
+      }
+    }
+  },
+  "remote": {},
+  "workspace": {
+    "dependencies": [
+      "jsr:@hono/hono@^4.11.1",
+      "npm:arktype"
+    ]
+  }
+}

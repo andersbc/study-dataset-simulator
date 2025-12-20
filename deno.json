@@ -5,6 +5,8 @@
   ],
   "tasks": {
     "dev:api": "deno task --cwd apps/api dev",
-    "dev:start": "docker compose -f docker-compose.dev.yml up --build"
+    "dev:start": "docker compose -f docker-compose.dev.yml up --build",
+    "start:api": "docker compose -f docker-compose.dev.yml up --build api",
+    "start:web": "docker compose -f docker-compose.dev.yml up --build web"
   }
 }

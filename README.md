@@ -15,7 +15,9 @@ A web-based tool for designing and simulating study datasets. This application a
 ### 1. Installation
 
 **Option A: Dev Container (Recommended)**
-If you use VS Code, simply open the project and click **"Reopen in Container"**. This will automatically install Node, Deno, and R in an isolated environment.
+1.  Install the **[Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)** extension in VS Code.
+2.  Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and search for **"Dev Containers: Reopen in Container"**. 
+3.  This will automatically calculate the environment and install Node, Deno, and R isolated from your machine.
 
 **Option B: Manual Installation**
 Clone the repository and install dependencies.
@@ -88,6 +90,13 @@ deno task dev:start
 
 -   **Hot Reloading**: Editing files in `apps/web` or `apps/api` will trigger updates in the container.
 -   **Note**: The first run might take a while to build the images.
+
+**Run Services Individually:**
+You can also run the services in separate terminals:
+```bash
+deno task start:api  # Runs just the API
+deno task start:web  # Runs just the Web App
+```
 
 ### Manual Docker Build
 
