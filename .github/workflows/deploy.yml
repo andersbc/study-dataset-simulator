@@ -1,0 +1,37 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            # Navigate to directory (clone if doesn't exist - one time setup usually done manually, but good to be safe)
+            if [ ! -d "/root/sim-site" ]; then
+              git clone https://github.com/${{ github.repository }} /root/sim-site
+            fi
+
+            cd /root/sim-site
+
+            # Pull latest changes
+            git pull origin main
+
+            # Rebuild and restart containers
+            # We use the prod config (docker-compose.yml)
+            docker compose up --build -d
+
+            # Prune unused images to save space
+            docker image prune -f

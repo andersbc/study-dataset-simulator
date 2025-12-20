@@ -2,13 +2,25 @@ import { Hono } from 'hono';
 import { StudyDesignSchema } from '@sim-site/shared';
 import { type } from 'arktype';
 
-const app = new Hono();
+export const app = new Hono();
+
+import { rateLimiter } from 'hono-rate-limiter';
 
 // Request logging middleware
 app.use('/*', async (c, next) => {
   console.log(`[${new Date().toISOString()}] ${c.req.method} ${c.req.url}`);
   await next();
 });
+
+import type { Context } from 'hono';
+
+// Rate limiter
+app.use('/*', rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  keyGenerator: (c: any) => c.req.header('x-forwarded-for') || 'unknown', // Method to generate custom identifiers for clients.
+}) as any);
 
 // Add CORS middleware
 app.use('/*', async (c, next) => {
@@ -42,11 +54,14 @@ app.post('/generate', async (c) => {
   try {
     const data = await generateDummyData();
     return c.json({ success: true, data });
-  } catch (err: any) {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Generation error:", err);
-    return c.json({ success: false, error: err.message }, 500);
+    return c.json({ success: false, error: message }, 500);
   }
 });
 
-Deno.serve({ port: 8000 }, app.fetch);
+if (import.meta.main) {
+  Deno.serve({ port: 8000 }, app.fetch);
+}
 

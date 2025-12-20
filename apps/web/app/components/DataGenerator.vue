@@ -1,37 +1,30 @@
 <template>
-  <v-card class="mb-4">
-    <v-card-title class="d-flex align-center">
-      Data Generation
-      <v-spacer></v-spacer>
-    </v-card-title>
+  <AppCard title="Data Generation" class="mb-4">
+    <div v-if="error" class="text-error mb-4">
+      {{ error }}
+    </div>
 
-    <v-card-text>
-      <div v-if="error" class="text-error mb-4">
-        {{ error }}
-      </div>
+    <div v-if="generatedData" class="mb-4">
+      <v-table>
+        <thead>
+          <tr>
+            <th v-for="(val, key) in generatedData[0]" :key="key">{{ key }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, i) in generatedData" :key="i">
+            <td v-for="(val, key) in row" :key="key">{{ val }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </div>
 
-      <div v-if="generatedData" class="mb-4">
-        <v-table>
-          <thead>
-            <tr>
-              <th v-for="(val, key) in generatedData[0]" :key="key">{{ key }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, i) in generatedData" :key="i">
-              <td v-for="(val, key) in row" :key="key">{{ val }}</td>
-            </tr>
-          </tbody>
-        </v-table>
-      </div>
-
-      <div class="d-flex justify-end">
-        <v-btn color="primary" @click="generateData" :loading="loading" prepend-icon="mdi-database-refresh">
-          Generate Dummy Data (R)
-        </v-btn>
-      </div>
-    </v-card-text>
-  </v-card>
+    <div class="d-flex justify-end">
+      <v-btn color="primary" @click="generateData" :loading="loading" prepend-icon="mdi-database-refresh">
+        Generate Dummy Data (R)
+      </v-btn>
+    </div>
+  </AppCard>
 </template>
 
 <script setup lang="ts">

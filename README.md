@@ -50,6 +50,15 @@ cd apps/web
 npm run dev
 ```
 
+### 3. Running Tests
+
+**API Tests:**
+```bash
+# From project root
+deno task test:api
+```
+This runs the Deno tests defined in `apps/api/__test__`, including unit tests and integration tests with R.
+
 ## Project Structure
 
 -   `apps/web`: The frontend application built with **Nuxt 3**, **Vuetify**, and **Vue 3**.
@@ -68,7 +77,12 @@ npm run dev
 
 This project depends on **R**, **Deno**, and **Node.js**. The recommended way to deploy is using **Docker**.
 
-### Using Docker Compose (Recommended)
+### Automated Deployment (DigitalOcean)
+The project includes a pre-configured GitHub Actions workflow (`.github/workflows/deploy.yml`) for automated deployment to a DigitalOcean Droplet via SSH. 
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for a step-by-step guide on setting this up. **Note:** Since the project uses standard Docker Compose, you can easily swap this out for any other container-based provider (AWS, Fly.io, etc.).
+
+### Using Docker Compose (Manual / Local)
 
 This will build both the API (with R installed) and the Frontend, and start them together.
 

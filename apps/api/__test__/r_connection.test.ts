@@ -1,15 +1,7 @@
+import { assertEquals } from "@std/assert";
 
-export async function runRTest() {
+Deno.test("R connection works", async () => {
   console.log("🦕 Deno: Attempting to spawn R process...");
-
-  const rCode = `
-    result <- list(
-      status = "success",
-      message = "Hello from R!",
-      calculation = mean(c(10, 20, 60))
-    )
-    cat(jsonlite::toJSON(result, auto_unbox = TRUE))
-  `;
 
   // Note: We might need to handle 'jsonlite' missing. 
   // For a raw test without dependencies, let's stick to base R first.
@@ -28,17 +20,15 @@ export async function runRTest() {
   const output = new TextDecoder().decode(stdout);
   const errorOutput = new TextDecoder().decode(stderr);
 
-  if (code === 0) {
-    console.log("✅ R execution successful!");
-    console.log("Output from R:", output);
-  } else {
+  if (code !== 0) {
     console.error("❌ R execution failed.");
     console.error("Error code:", code);
     console.error("Stderr:", errorOutput);
+  } else {
+    console.log("✅ R execution successful!");
+    console.log("Output from R:", output);
   }
-}
 
-// Run if main
-if (import.meta.main) {
-  await runRTest();
-}
+  assertEquals(code, 0, "R process should exit with code 0");
+  assertEquals(output.trim(), "R says mean is: 30.000000");
+});
