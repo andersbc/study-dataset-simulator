@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="mb-6">
     <v-card-title class="py-6 px-6" v-if="title || $slots.title">
       <slot name="title">
         <div class="text-h5 font-weight-medium">{{ title }}</div>

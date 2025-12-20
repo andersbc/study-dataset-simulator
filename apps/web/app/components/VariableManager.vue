@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-12">
+  <div>
 
     <AppCard>
       <template #title>
@@ -47,6 +47,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <EffectManager />
   </div>
 </template>
 

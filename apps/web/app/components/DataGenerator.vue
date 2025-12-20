@@ -1,5 +1,5 @@
 <template>
-  <AppCard title="Data Generation" class="mb-4">
+  <AppCard title="Data Generation">
     <div v-if="error" class="text-error mb-4">
       {{ error }}
     </div>
