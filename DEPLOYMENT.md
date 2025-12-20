@@ -28,7 +28,7 @@ This guide explains how to set up your DigitalOcean Droplet and configure automa
     ```bash
     docker compose up --build -d
     ```
-    Visit `http://<your_droplet_ip>:3000`.
+    Visit `http://<your_droplet_ip>`.
 
 ## 2. Automating Updates (GitHub Actions)
 
