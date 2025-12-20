@@ -4,6 +4,7 @@
     "./packages/shared"
   ],
   "tasks": {
-    "dev:api": "deno task --cwd apps/api dev"
+    "dev:api": "deno task --cwd apps/api dev",
+    "dev:start": "docker compose -f docker-compose.dev.yml up --build"
   }
 }

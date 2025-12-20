@@ -1,0 +1,32 @@
+{
+  "name": "Sim Site Monorepo (Node, Deno, R)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "deno.enable": true,
+        "deno.lint": true,
+        "deno.unstable": true,
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "[vue]": {
+          "editor.defaultFormatter": "Vue.volar"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "denoland.vscode-deno"
+        }
+      },
+      "extensions": [
+        "denoland.vscode-deno",
+        "Vue.volar",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}

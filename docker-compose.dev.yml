@@ -1,0 +1,40 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+    working_dir: /app/apps/api
+    # Run in watch mode. 
+    command: deno task dev
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      # We target the 'builder' stage because the final stage in the specific Dockerfile 
+      # might be optimized for production (slim, no devDeps).
+      target: builder
+    working_dir: /app/apps/web
+    ports:
+      - "3000:3000"
+      # Nuxt/Vite HMR port often needed if not proxying correctly, usually 24678 for Vite
+      - "24678:24678"
+    volumes:
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      # Prevent local node_modules from overwriting container's (Linux) node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.nuxt
+    environment:
+      - HOST=0.0.0.0
+      - NUXT_PORT=3000
+      - CHOKIDAR_USEPOLLING=true # Often needed for hot-reload in Docker on some OSs
+      - NUXT_PUBLIC_API_URL=http://api:8000
+    command: npm run dev
+    depends_on:
+      - api

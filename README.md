@@ -14,6 +14,10 @@ A web-based tool for designing and simulating study datasets. This application a
 
 ### 1. Installation
 
+**Option A: Dev Container (Recommended)**
+If you use VS Code, simply open the project and click **"Reopen in Container"**. This will automatically install Node, Deno, and R in an isolated environment.
+
+**Option B: Manual Installation**
 Clone the repository and install dependencies.
 
 **Web App (Nuxt.js):**
@@ -57,6 +61,47 @@ npm run dev
 -   **Distributions**: Configure Normal and Uniform distributions.
 -   **Validation**: Real-time validation for names, categories, and parameters.
 -   **Drag & Drop**: Reorder variables and categories easily.
+
+## Deployment
+
+This project depends on **R**, **Deno**, and **Node.js**. The recommended way to deploy is using **Docker**.
+
+### Using Docker Compose (Recommended)
+
+This will build both the API (with R installed) and the Frontend, and start them together.
+
+```bash
+docker compose up --build
+```
+
+- Web App: `http://localhost:3000`
+- API: `http://localhost:8000`
+
+
+### Development with Docker
+
+If you prefer not to install R or Node locally, you can run the development environment entirely in Docker:
+
+```bash
+deno task dev:start
+```
+
+-   **Hot Reloading**: Editing files in `apps/web` or `apps/api` will trigger updates in the container.
+-   **Note**: The first run might take a while to build the images.
+
+### Manual Docker Build
+
+**API:**
+```bash
+docker build -f apps/api/Dockerfile -t sim-site-api .
+docker run -p 8000:8000 sim-site-api
+```
+
+**Web:**
+```bash
+docker build -f apps/web/Dockerfile -t sim-site-web .
+docker run -p 3000:3000 sim-site-web
+```
 
 ## License
 
