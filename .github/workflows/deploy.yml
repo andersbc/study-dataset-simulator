@@ -31,7 +31,7 @@ jobs:
 
             # Rebuild and restart containers
             # We use the prod config (docker-compose.yml)
-            docker compose up --build -d
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
             # Prune unused images to save space
             docker image prune -f
