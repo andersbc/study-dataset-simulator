@@ -41,14 +41,14 @@ const generateData = async () => {
 
   try {
     const config = useRuntimeConfig()
-    // Use configured API URL or fallback to localhost
-    // Note: In Docker, browser still hits localhost:8000 exposed port, 
-    // unless using internal networking for SSR calls. 
-    // For client-side fetch, it must be accessible from browser.
-    const apiBase = 'http://localhost:8000'
+    // Default to configured URL
+    let apiBase = config.public.apiBase
 
-    // TODO: In production, this should be an environment variable 
-    // that the client can access (NUXT_PUBLIC_API_BASE).
+    // Smart fallback: If we are on the client (browser), and the config says 'localhost'
+    // but we are actually visiting a remote IP/domain, assume API is on port 8000 of the same host.
+    if (import.meta.client && apiBase.includes('localhost') && window.location.hostname !== 'localhost') {
+      apiBase = `${window.location.protocol}//${window.location.hostname}:8000`
+    }
 
     const response = await fetch(`${apiBase}/generate`, {
       method: 'POST'
