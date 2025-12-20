@@ -16,18 +16,17 @@
     </div>
 
     <!-- Add Effect Form -->
-    <v-sheet class="bg-grey-lighten-4 pa-4 rounded">
+    <v-sheet class="pa-4 rounded" color="form-surface">
       <div class="text-subtitle-2 mb-2">New Relationship</div>
       <div class="d-flex align-center gap-4">
         <v-select v-model="newEffect.source" :items="variableNames" label="Variable A" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined" bg-color="white"></v-select>
+          class="flex-grow-1 mr-2" variant="outlined"></v-select>
 
         <v-select v-model="newEffect.target" :items="variableNames" label="Variable B" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined" bg-color="white"></v-select>
+          class="flex-grow-1 mr-2" variant="outlined"></v-select>
 
-        <v-text-field v-model.number="newEffect.coefficient" label="Correlation (r)" type="number" min="-1" max="1"
-          step="0.1" density="compact" hide-details class="flex-grow-1 mr-2" variant="outlined"
-          bg-color="white"></v-text-field>
+        <v-number-input v-model="newEffect.coefficient" label="Correlation (r)" :min="-1" :max="1" :step="0.1"
+          density="compact" hide-details class="flex-grow-1 mr-2" variant="outlined"></v-number-input>
 
         <v-btn color="primary" icon="mdi-plus" @click="addEffect" :disabled="!isValid"></v-btn>
       </div>
@@ -37,6 +36,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { VNumberInput } from 'vuetify/components/VNumberInput'
 import { EFFECT_CORRELATION, type Effect } from '@sim-site/shared'
 
 const design = useStudyDesign()

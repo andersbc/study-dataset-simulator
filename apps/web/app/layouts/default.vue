@@ -15,8 +15,10 @@
         <v-btn icon="mdi-redo" variant="text" :disabled="!canRedo" @click="redo" v-tooltip="'Redo'"
           class="mr-2"></v-btn>
         <v-divider vertical class="mx-2 my-auto" style="height: 24px"></v-divider>
-        <v-btn :icon="theme.global.name.value === 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-          @click="toggleTheme"></v-btn>
+        <v-btn icon="mdi-github" href="https://github.com/andersbc/study-dataset-simulator" target="_blank"
+          v-tooltip="'View Source'"></v-btn>
+        <v-btn :icon="theme.global.name.value === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+          @click="toggleTheme" v-tooltip="'Toggle Theme'"></v-btn>
       </template>
     </v-app-bar>
     <v-main>
