@@ -8,6 +8,7 @@ A web-based tool for designing and simulating study datasets. This application a
 
 -   **Deno**: Required for the API and shared packages. [Install Deno](https://deno.land/#installation)
 -   **Node.js & npm**: Required for the Web application (Nuxt.js). [Install Node.js](https://nodejs.org/)
+-   **R**: Required for data generation. [Install R](https://www.r-project.org/)
 
 ## Getting Started
 
@@ -29,7 +30,7 @@ Deno caches dependencies on the fly, so no explicit install step is usually need
 You need to run both the API and the Web application for the full experience.
 
 **Terminal 1: API (Deno)**
-Runs on `http://localhost:8000` (default)
+Runs on `http://localhost:8000`. requires Rscript in your PATH.
 ```bash
 # From project root
 deno task dev:api

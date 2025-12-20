@@ -9,6 +9,7 @@
     <PersistenceNotice />
     <StudyConfig />
     <VariableManager />
+    <DataGenerator />
     <JsonPreview />
   </v-container>
 </template>

@@ -20,13 +20,16 @@
         <!-- Accordion for Instrument -->
         <template v-else>
           <v-expansion-panels variant="accordion" multiple v-model="openPanels">
-            <v-expansion-panel title="Settings" value="settings">
+            <v-expansion-panel value="itemtype">
+              <v-expansion-panel-title class="text-uppercase font-weight-bold">Variables (Item
+                type)</v-expansion-panel-title>
               <v-expansion-panel-text>
                 <VariableConfiguration v-model="localVar" />
               </v-expansion-panel-text>
             </v-expansion-panel>
 
-            <v-expansion-panel title="Items" value="items">
+            <v-expansion-panel value="items">
+              <v-expansion-panel-title class="text-uppercase font-weight-bold">Items</v-expansion-panel-title>
               <v-expansion-panel-text>
                 <v-row align="center" dense>
                   <v-col cols="4">
@@ -64,7 +67,8 @@
               </v-expansion-panel-text>
             </v-expansion-panel>
 
-            <v-expansion-panel title="Scales" value="scales">
+            <v-expansion-panel value="scales">
+              <v-expansion-panel-title class="text-uppercase font-weight-bold">Scales</v-expansion-panel-title>
               <v-expansion-panel-text>
                 <div class="text-caption text-medium-emphasis mb-2">
                   Define scales by grouping items.
@@ -201,7 +205,7 @@ const design = useStudyDesign()
 
 const itemPrefix = ref('Q')
 const itemCount = ref(5)
-const openPanels = ref(['settings', 'items', 'scales'])
+const openPanels = ref(props.modelValue.name ? ['itemtype', 'items', 'scales'] : ['itemtype'])
 
 const validateArk = (schema: any, val: any) => {
   const res = schema(val)

@@ -2,7 +2,7 @@
   "name": "@sim-site/api",
   "version": "0.1.0",
   "tasks": {
-    "dev": "deno run --watch --allow-net main.ts"
+    "dev": "deno run --watch --allow-net --allow-run main.ts"
   },
   "exports": "./main.ts",
   "imports": {

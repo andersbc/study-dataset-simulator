@@ -1,9 +1,16 @@
 <template>
   <div>
-    <v-select v-model="localModel.dataType" :items="dataTypeOptions" label="Data Type" variant="outlined"></v-select>
+    <v-row>
+      <v-col cols="12" :md="localModel.dataType ? 6 : 12">
+        <v-select v-model="localModel.dataType" :items="dataTypeOptions" label="Data Type" variant="outlined"
+          hide-details="auto"></v-select>
+      </v-col>
 
-    <v-select v-if="localModel.dataType" v-model="localModel.distribution.type" :items="availableDistributions"
-      label="Distribution" variant="outlined" class="mt-2"></v-select>
+      <v-col cols="12" md="6" v-if="localModel.dataType">
+        <v-select v-model="localModel.distribution.type" :items="availableDistributions" label="Distribution"
+          variant="outlined" hide-details="auto"></v-select>
+      </v-col>
+    </v-row>
 
     <template v-if="localModel.distribution?.type === DIST_NORMAL">
       <v-row class="mt-2">
@@ -31,11 +38,11 @@
       </v-row>
     </template>
 
-    <template v-if="[VAR_NOMINAL, VAR_ORDINAL].includes(localModel.dataType || '')">
+    <template v-if="([VAR_NOMINAL, VAR_ORDINAL] as string[]).includes(localModel.dataType || '')">
       <div class="mt-4">
         <div class="d-flex justify-space-between align-center mb-2">
           <div class="text-subtitle-1">
-            {{ localModel.kind === 'instrument' ? 'Shared Response Scale' : 'Categories' }}
+            {{ localModel.kind === 'instrument' ? 'Categories (response scale)' : 'Categories' }}
             <span class="text-caption text-medium-emphasis">(Min 2)</span>
           </div>
           <v-btn v-if="localModel.dataType === VAR_ORDINAL" size="small" variant="text" color="primary"
@@ -46,10 +53,10 @@
 
         <div class="d-flex gap-2 mb-2">
           <v-text-field v-model="newCategory" label="Add Category" variant="outlined" density="compact"
-            :error-messages="localModel.categories?.includes(newCategory) ? 'Category already exists' : ''"
-            hide-details="auto" @keydown.enter.prevent="addCategory"></v-text-field>
+            :error-messages="categories.includes(newCategory) ? 'Category already exists' : ''" hide-details="auto"
+            @keydown.enter.prevent="addCategory"></v-text-field>
           <v-btn icon size="small" color="primary" class="mt-1 ml-2" @click="addCategory"
-            :disabled="!newCategory || localModel.categories?.includes(newCategory)">
+            :disabled="!newCategory || categories.includes(newCategory)">
             <v-icon>mdi-plus</v-icon>
             <v-tooltip activator="parent" location="top">Add Category</v-tooltip>
           </v-btn>
@@ -57,10 +64,29 @@
 
         <ClientOnly>
           <div class="category-list-container border rounded pa-2 mt-2">
-            <draggable v-model="localModel.categories" handle=".cat-drag-handle" item-key="self"
-              ghost-class="ghost-item" drag-class="drag-item">
+            <!-- Column Headers -->
+            <div class="d-flex align-center px-2 pb-2 text-caption font-weight-bold text-medium-emphasis">
+              <!-- Spacer for drag handle -->
+              <div style="width: 24px" class="mr-2"></div>
+
+              <!-- Value Header (Ordinal Only) -->
+              <div v-if="localModel.dataType === VAR_ORDINAL" style="min-width: 32px" class="mr-3 text-center">
+                Rank
+              </div>
+
+              <!-- Label/Value Header -->
+              <div class="flex-grow-1">
+                {{ localModel.dataType === VAR_NOMINAL ? 'Value' : 'Label' }}
+              </div>
+
+              <!-- Spacer for delete button -->
+              <div style="width: 28px" class="ml-2"></div>
+            </div>
+
+            <draggable v-model="categories" handle=".cat-drag-handle" item-key="self" ghost-class="ghost-item"
+              drag-class="drag-item">
               <template #item="{ element: category, index }">
-                <div class="d-flex align-center py-2 px-2 category-item">
+                <div class="d-flex align-center py-1 px-2 category-item rounded">
                   <v-icon icon="mdi-drag" class="cat-drag-handle cursor-move mr-2 text-medium-emphasis"></v-icon>
 
                   <!-- Ordinal Index -->
@@ -69,25 +95,28 @@
                     {{ index }}
                   </v-chip>
 
-                  <v-text-field v-model="localModel.categories[index]" variant="plain" density="compact"
-                    hide-details="auto" class="flex-grow-1"
-                    :error-messages="isCategoryDuplicate(localModel.categories[index], index) ? 'Duplicate' : ''"></v-text-field>
+                  <div class="flex-grow-1 position-relative d-flex align-center">
+                    <v-text-field v-model="categories[index]" variant="plain" density="compact" hide-details="auto"
+                      class="flex-grow-1 centered-input"
+                      :error-messages="isCategoryDuplicate(categories[index], index) ? 'Duplicate' : ''">
+                    </v-text-field>
+                  </div>
 
-                  <v-btn icon="mdi-close" variant="text" size="small" color="error" density="comfortable"
-                    @click="removeCategory(index)">
+                  <v-btn size="small" variant="text" color="error" icon class="ml-2" @click="removeCategory(index)">
+                    <v-icon>mdi-delete</v-icon>
                     <v-tooltip activator="parent" location="top">Remove Category</v-tooltip>
                   </v-btn>
                 </div>
               </template>
             </draggable>
-            <div v-if="(!localModel.categories || localModel.categories.length === 0)"
+            <div v-if="(!categories || categories.length === 0)"
               class="text-caption text-medium-emphasis text-center py-4">
               No categories added. Type above to add.
             </div>
           </div>
         </ClientOnly>
-        <div v-if="rules.categories(localModel.categories) !== true" class="text-error text-caption mt-1">
-          {{ rules.categories(localModel.categories) }}
+        <div v-if="rules.categories(categories) !== true" class="text-error text-caption mt-1">
+          {{ rules.categories(categories) }}
         </div>
       </div>
     </template>
@@ -160,25 +189,39 @@ watch(() => localModel.value.dataType, (newType, oldType) => {
   }
 })
 
+const categories = computed({
+  get: () => (localModel.value as any).categories || [],
+  set: (val: string[]) => {
+    if (!('categories' in localModel.value)) {
+      // Force it if missing (though logic shouldn't allow this state ideally)
+      Object.assign(localModel.value, { categories: val })
+    } else {
+      (localModel.value as any).categories = val
+    }
+  }
+})
+
 const newCategory = ref('')
 const addCategory = () => {
-  if (newCategory.value && !localModel.value.categories?.includes(newCategory.value)) {
-    if (!localModel.value.categories) localModel.value.categories = []
-    localModel.value.categories.push(newCategory.value)
+  if (newCategory.value && !categories.value.includes(newCategory.value)) {
+    const newCats = [...categories.value, newCategory.value]
+    categories.value = newCats
     newCategory.value = ''
   }
 }
 
 const removeCategory = (index: number) => {
-  localModel.value.categories?.splice(index, 1)
+  const newCats = [...categories.value]
+  newCats.splice(index, 1)
+  categories.value = newCats
 }
 
 const isCategoryDuplicate = (val: string, index: number) => {
-  return localModel.value.categories?.some((c: string, i: number) => c === val && i !== index)
+  return categories.value.some((c: string, i: number) => c === val && i !== index)
 }
 
 const generateLevels = () => {
-  localModel.value.categories = ['0', '1', '2', '3', '4']
+  categories.value = ['0', '1', '2', '3', '4']
 }
 
 </script>
@@ -186,6 +229,25 @@ const generateLevels = () => {
 <style scoped>
 .cursor-move {
   cursor: move;
+}
+
+.category-item {
+  transition: background-color 0.2s;
+}
+
+/* Show text cursor on hover to indicate editability */
+.category-item:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
+  cursor: text;
+}
+
+/* Force vertical alignment for the input inside text-field */
+.centered-input :deep(.v-field__input) {
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
 }
 
 .ghost-item {
