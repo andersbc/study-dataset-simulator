@@ -14,13 +14,13 @@ const theme = useTheme()
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme')
   if (savedTheme) {
-    theme.global.name.value = savedTheme
+    ; (theme as any).change(savedTheme)
   }
 
   // Listen for changes in other tabs
   window.addEventListener('storage', (event) => {
     if (event.key === 'theme' && event.newValue) {
-      theme.global.name.value = event.newValue
+      ; (theme as any).change(event.newValue)
     }
   })
 })

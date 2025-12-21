@@ -66,7 +66,10 @@ const isTargetingAdmin = computed(() => {
 })
 
 async function handleLogin() {
-  if (!password.value) return
+  if (!password.value) {
+    error.value = 'Password is required'
+    return
+  }
 
   loading.value = true
   error.value = ''

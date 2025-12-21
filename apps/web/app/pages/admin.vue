@@ -2,10 +2,12 @@
   <v-container>
     <PageHeader title="Administration Page" icon="mdi-shield-crown" />
 
-    <v-tabs v-model="tab" color="primary" class="mb-6">
-      <v-tab value="settings" prepend-icon="mdi-cog">Settings</v-tab>
-      <v-tab value="logs" prepend-icon="mdi-file-document-multiple">System Logs</v-tab>
-    </v-tabs>
+    <ClientOnly>
+      <v-tabs v-model="tab" color="primary" class="mb-6">
+        <v-tab value="settings" prepend-icon="mdi-cog">Settings</v-tab>
+        <v-tab value="logs" prepend-icon="mdi-file-document-multiple">System Logs</v-tab>
+      </v-tabs>
+    </ClientOnly>
 
     <v-window v-model="tab">
       <!-- SETTINGS TAB -->
