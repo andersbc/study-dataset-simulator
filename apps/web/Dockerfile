@@ -2,16 +2,19 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# 1. Install dependencies (Cached separately)
+COPY apps/web/package.json apps/web/package-lock.json ./apps/web/
+WORKDIR /app/apps/web
+RUN npm install
+
+# 2. Copy source code
+WORKDIR /app
 # Copy shared packages (required for alias resolution)
 COPY packages/shared ./packages/shared
-
-# Copy Web app
+# Copy Web app source
 COPY apps/web ./apps/web
 
 WORKDIR /app/apps/web
-
-# Install dependencies
-RUN npm install
 
 # Increase memory limit for build (uses swap if needed)
 ENV NODE_OPTIONS="--max_old_space_size=2048"
