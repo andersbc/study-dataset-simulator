@@ -180,6 +180,7 @@ import {
 const props = defineProps<{
   modelValue: Variable | Instrument
   startExpanded?: boolean
+  isNew?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -217,7 +218,7 @@ const rules = {
     if (validateArk(VariableName, v) !== true) return "Invalid name format (no spaces, can't start with number, max 70 chars)"
 
     const occupied = getOtherOccupiedNames()
-    if (occupied.has(v)) return "Variable name must be globally unique"
+    if (occupied.has(v)) return "This name is already used by another variable"
     return true
   }
 }
@@ -385,7 +386,8 @@ const cancel = () => {
   // Or simpler: just revert state. Parent handles lifecycle of 'new' items 
   // by observing they are empty/removed?
   // Let's just emit 'remove' if it was a new item (empty name originally)
-  if (!props.modelValue.name) {
+  // Let's just emit 'remove' if it was a new item (empty name originally OR marked as new)
+  if (!props.modelValue.name || props.isNew) {
     emit('remove')
   } else {
     isEditing.value = false

@@ -132,10 +132,13 @@ docker run -p 3000:3000 sim-site-web
 
 ## Contributing & Workflow
  
- This project uses a **branch-based workflow**:
+ This project uses a **branch-based workflow**.
+ 
+ > **Important:** The `main` branch is for **production only**. All development should happen on `dev` (or feature branches off `dev`).
+ 
  1.  **Work**: Create a feature branch from `dev` (e.g., `feat/my-feature`).
- 2.  **Pull Request**: Open a PR to merge into `dev` (or `main` for hotfixes).
- 3.  **Production**: Merging to `main` **automatically triggers a deployment** to the live server.
+ 2.  **Pull Request**: Open a PR to merge into `dev`.
+ 3.  **Production**: When `dev` is stable, use `deno task deploy` to merge `dev` -> `main`, which **automatically triggers a deployment** to the live server.
  
  
  **Note for Forks**: The GitHub Action is configured to **skip deployment** if run from a forked repository. You can safely fork and run tests without worrying about failing connection attempts to the production server.
