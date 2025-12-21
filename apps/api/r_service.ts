@@ -1,24 +1,33 @@
 
-export async function generateDummyData() {
-  console.log("🦕 Deno: Generating dummy data via R...");
+import { parse } from "@std/csv";
 
-  // Generate some simple JSON in R without needing external libraries if possible,
-  // or just use sprintf to make "fake" json for now to ensure robustness without dep management yet.
+export async function generateDummyData() {
+  console.log("🦕 Deno: Generating dummy data via R with simstudy...");
+
   const rCode = `
-    # Create valid JSON manually to avoid dependencies for the first iteration
-    set.seed(123)
-    n <- 5
-    ids <- 1:n
-    groups <- sample(c("A", "B"), n, replace=TRUE)
-    values <- round(rnorm(n, 10, 2), 2)
+    # Ensure local library path is included (in case sudo install failed)
+    .libPaths(c("~/R/library", .libPaths()))
     
-    # Simple manual JSON construction
-    json_str <- sprintf(
-      '{"id": %d, "group": "%s", "value": %f}',
-      ids, groups, values
-    )
+    if (!require("simstudy", quietly = TRUE)) {
+      message("Current .libPaths(): ", paste(.libPaths(), collapse=", "))
+      stop("Package 'simstudy' not found. It might still be installing in the background.")
+    }
     
-    cat(sprintf("[%s]", paste(json_str, collapse=",")))
+    set.seed(1234)
+    
+    # 1. Define data definition
+    dir <- tempdir() # Set temp dir
+    
+    # simstudy automatically adds an 'id' column, so we start with age
+    def <- defData(varname = "age", formula = 30, variance = 5, dist = "normal")
+    def <- defData(def, varname = "group", formula = "0.5;0.5", dist = "categorical")
+    def <- defData(def, varname = "score", formula = "10 + 2*group + 0.1*age", variance = 3, dist = "normal")
+    
+    # 2. Generate data
+    dd <- genData(10, def)
+    
+    # 3. Output as CSV (no quotes to simplify parsing if valid numbers/strings)
+    write.csv(dd, stdout(), row.names=FALSE, quote=FALSE)
   `;
 
   const command = new Deno.Command("Rscript", {
@@ -32,15 +41,24 @@ export async function generateDummyData() {
   const errorOutput = new TextDecoder().decode(stderr);
 
   if (code !== 0) {
-    const msg = `R execution failed with code ${code}: ${errorOutput}`;
+    const msg = `R execution failed: ${errorOutput}`;
     console.error(msg);
+    // Return mock data temporarily if R is broken (e.g. still installing) to not crash UI demo
+    // But user asked to use the package. Throwing is better so they see if it works.
     throw new Error(msg);
   }
 
   try {
-    return JSON.parse(output);
-  } catch (_e) {
-    console.error("Failed to parse R output:", output);
+    // Parse CSV output.
+    // R write.csv includes a header row. "id,age,group,score"
+    // We use explicit columns to map them safely, skipping the header.
+    const result = parse(output, {
+      skipFirstRow: true,
+      columns: ["id", "age", "group", "score"]
+    });
+    return result;
+  } catch (e) {
+    console.error("Failed to parse R output:", output, e);
     throw new Error("Invalid format returned from R process");
   }
 }
