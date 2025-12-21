@@ -24,8 +24,28 @@ async function deploy() {
     }
   }
 
-  // 1. Check if we are on dev (optional, but good safety) 
-  // Skipped for now, assume user knows they are deploying dev->main content
+  // 1. Sync Environment Config (REQUIRED)
+  console.log("📂 Syncing .env.prod to GitHub Secrets...");
+  try {
+    const envProdPath = $.path(".env.prod");
+
+    if (!await envProdPath.exists()) {
+      console.error("❌ Error: Missing '.env.prod' file.");
+      console.error("👉 This file is required. Create it with your production secrets.");
+      Deno.exit(1);
+    }
+
+    // Sync content to GitHub Secret 'PROD_ENV_FILE'
+    // This allows the Git Workflow to write the file to the server without us needing the IP locally.
+    console.log("Found .env.prod, updating GitHub secret 'PROD_ENV_FILE'...");
+    await $`gh secret set PROD_ENV_FILE < .env.prod`;
+    console.log("✅ GitHub Secret updated successfully.");
+
+  } catch (e) {
+    console.error("❌ Failed to update GitHub secret:", e);
+    console.error("👉 Deployment stopped because config sync failed. Ensure you are logged in via 'gh auth login'.");
+    Deno.exit(1);
+  }
 
   // 2. Check for existing PR
   console.log("🔍 Checking for existing PR...");
@@ -59,9 +79,9 @@ async function deploy() {
     // Sometimes the output is in stdout/stderr properties of the error object if dax captures it
     const combinedOutput = (err.stdout || "") + (err.stderr || "") + message;
 
-    // Handle "clean status" error (happens when no checks are required/pending so auto-merge fails)
+    // Handle "clean status" error
     if (combinedOutput.includes("clean status")) {
-      console.log("ℹ️  PR is ready to merge immediately (no auto-merge needed). Merging now...");
+      console.log("ℹ️  PR is ready to merge immediately. Merging now...");
       try {
         await $`gh pr merge dev --merge`;
       } catch (innerE: unknown) {
@@ -81,18 +101,16 @@ async function deploy() {
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   try {
-    // We need to explicitly look for the run on 'main' because we are likely on 'dev'
-    // and 'gh run watch' defaults to the current branch.
     const runId = await $`gh run list --workflow deploy.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'`.text();
 
     if (runId.trim()) {
       console.log(`🚀 Watching workflow run #${runId.trim()}...`);
       await $`gh run watch ${runId.trim()} --exit-status`;
     } else {
-      console.log("⚠️  Could not find a running workflow on 'main'. It might be queued or failed to trigger.");
+      console.log("⚠️  Could not find a running workflow. It might be queued.");
     }
   } catch (_e: unknown) {
-    console.log("Done. (Monitor exited, likely no active runs)");
+    console.log("Done. (Monitor exited)");
   }
 }
 

@@ -16,7 +16,14 @@
 
     <v-alert v-if="error" type="error" variant="tonal" class="mb-4" density="compact" closable
       @click:close="error = ''">
-      {{ error }}
+      <div v-if="isAuthError" class="d-flex align-center">
+        <span>{{ error }}</span>
+        <v-btn to="/login" variant="text" size="small" class="ml-2 text-decoration-underline font-weight-bold"
+          prepend-icon="mdi-login">
+          Go to Login
+        </v-btn>
+      </div>
+      <span v-else>{{ error }}</span>
     </v-alert>
 
     <div v-if="generatedData" class="mt-4">
@@ -46,6 +53,7 @@ import { generateRScript, validateStudyDesign, MAX_GENERATION_N, PREVIEW_LIMIT }
 
 const loading = ref(false)
 const error = ref('')
+const isAuthError = ref(false)
 const generatedData = ref<any[] | null>(null)
 const sampleSize = ref(100)
 
@@ -109,29 +117,18 @@ const generateData = async () => {
     if (!validation.valid) {
       throw new Error("Validation Error: " + validation.errors.map(e => e.message).join(', '))
     }
-    const config = useRuntimeConfig()
-    // Default to configured URL
-    let apiBase = config.public.apiBase
-
-    // Smart fallback: If we are on the client (browser), and the config says 'localhost'
-    // but we are actually visiting a remote IP/domain, assume API is on port 8000 of the same host.
-    if (import.meta.client && apiBase.includes('localhost') && window.location.hostname !== 'localhost') {
-      apiBase = `${window.location.protocol}//${window.location.hostname}:8000`
-    }
-
-    const response = await fetch(`${apiBase}/generate`, {
+    const { $api } = useNuxtApp()
+    // $api handles baseURL and auth headers automatically via plugin
+    const result = await $api<any>('/generate', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      // Pass wrapped object with N
-      body: JSON.stringify({
+      body: {
         design: design.value,
         n: sampleSize.value
-      })
+      }
     })
 
-    const result = await response.json()
+    // Result is already parsed JSON by $fetch/$api
+
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to generate data')
@@ -141,7 +138,13 @@ const generateData = async () => {
     downloadCSV(result.data)
   } catch (err: any) {
     console.error(err)
-    error.value = err.message || 'An unexpected error occurred'
+    if (err.statusCode === 401 || err.status === 401) {
+      isAuthError.value = true
+      error.value = "You must login to perform this action."
+    } else {
+      isAuthError.value = false
+      error.value = err.message || 'An unexpected error occurred'
+    }
   } finally {
     loading.value = false
   }

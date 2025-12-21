@@ -55,9 +55,30 @@ We have created `.github/workflows/deploy.yml`. For it to work, you need to add 
     *   `git pull` (updates code)
     *   `docker compose up --build -d` (rebuilds and restarts containers)
 
-## Troubleshooting
+## 4. Configuration & Environment Variables
 
--   **Env Vars**: If you have secrets in `.env`, you must create that file manually on the server (`nano .env`) as it is not committed to git.
+We have standardized the environment configuration workflow using GitHub as the secure hub:
+
+1.  **`.env`**: Your **Local Development** configuration.
+    *   *Status*: Git-ignored.
+
+2.  **`.env.prod`**: Your **Production** configuration.
+    *   **Action**: Create this locally.
+    *   **Automation**: The `deno task deploy` script will automatically sync this file to **GitHub Secrets** (`PROD_ENV_FILE`).
+    *   **Result**: The GitHub Action will then write this file to your server during deployment.
+    *   *Status*: Git-ignored (Private).
+
+3.  **`.env.example`**: A template file.
+    *   *Status*: Checked into Git (Public).
+
+### Setup for Automatic Config Sync
+1.  **No Local IP Needed**: You do NOT need the server IP in your local env anymore (DRY!).
+2.  Create `.env.prod` with your production secrets.
+3.  Ensure you are logged in: `gh auth login`.
+4.  Run `deno task deploy`.
+    *   It will sync `.env.prod` -> GitHub Secrets.
+    *   It will create/merge the PR.
+    *   The Deployment Action will deploy code + config.
 
 ## 4. Standard Deployment Procedure
 

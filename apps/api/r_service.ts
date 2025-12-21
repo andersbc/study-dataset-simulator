@@ -18,7 +18,7 @@ export async function generateDummyData(design: StudyDesign, n: number = 100) {
   const errorOutput = new TextDecoder().decode(stderr);
 
   if (code !== 0) {
-    const msg = `R execution failed: ${errorOutput}`;
+    const msg = `R execution failed: ${errorOutput}\nSTDOUT:\n${output}`;
     console.error(msg);
     // Return mock data temporarily if R is broken (e.g. still installing) to not crash UI demo
     // But user asked to use the package. Throwing is better so they see if it works.
@@ -53,7 +53,7 @@ export async function generateDummyData(design: StudyDesign, n: number = 100) {
     // But we don't know the columns statically.
     // We can extract them from the first line of 'output'.
 
-    const [headerLine, ...body] = output.trim().split('\n');
+    const [headerLine, ..._body] = output.trim().split('\n');
     const headers = headerLine.split(',').map(h => h.replace(/^"|"$/g, '')); // Remove quotes if any
 
     return parse(output, {

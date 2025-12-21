@@ -4,6 +4,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Environment Variables
+.env
+.env.local
+.env.prod
+!/env.example
+
 # Nuxt
 .nuxt/
 .output/
@@ -24,3 +30,6 @@ lcov.info
 # Logs
 logs
 *.log
+
+# Data (Sensitive config)
+data/

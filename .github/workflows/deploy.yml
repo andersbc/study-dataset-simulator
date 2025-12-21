@@ -60,6 +60,7 @@ jobs:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
+          envs: PROD_ENV_FILE
           command_timeout: 30m
           script: |
             # Navigate to directory (clone if doesn't exist - one time setup usually done manually, but good to be safe)
@@ -71,6 +72,9 @@ jobs:
 
             # Pull latest changes (for docker-compose.yml updates)
             git pull origin main
+
+            # Update .env file from secrets (Automated configuration)
+            echo "$PROD_ENV_FILE" > /root/sim-site/.env
 
             # Login to GHCR on the server (if needed for private packages, though these are likely public)
             # If public, no login needed. Assuming public visibility for ghcr packages for now or that server is authenticated.

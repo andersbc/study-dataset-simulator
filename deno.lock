@@ -170,6 +170,8 @@
         "dependencies": [
           "jsr:@hono/hono@^4.11.1",
           "jsr:@std/assert@0.224.0",
+          "jsr:@std/fs@0.224.0",
+          "jsr:@std/path@0.224.0",
           "npm:arktype@*",
           "npm:hono-rate-limiter@0.4"
         ]

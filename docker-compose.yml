@@ -6,9 +6,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Optional: mount source for dev (but complex with R deps, stick to rebuild for now or use specific dev setup)
       - ./apps/api:/app/apps/api
       - ./packages:/app/packages
+      - ./data:/app/data
+    env_file:
+      - .env
     # Override command for dev to get watching, if desired. 
     # For pure deployment emulation, use the default CMD in Dockerfile.
     # command: deno task dev 
@@ -19,7 +21,7 @@ services:
       dockerfile: apps/web/Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NUXT_PUBLIC_API_URL=http://api:8000
+    env_file:
+      - .env
     depends_on:
       - api

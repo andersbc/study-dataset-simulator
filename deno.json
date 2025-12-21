@@ -12,8 +12,9 @@
   "tasks": {
     "dev:api": "deno task --cwd apps/api dev",
     "test:api": "deno task --cwd apps/api test",
+    "sync:r": "deno run -A scripts/sync_r_logic.ts",
     "dev:start": "docker compose -f docker-compose.dev.yml up --build",
-    "start:api": "docker compose -f docker-compose.dev.yml up --build api",
+    "start:api": "deno task sync:r && docker compose -f docker-compose.dev.yml up --build api",
     "start:web": "docker compose -f docker-compose.dev.yml up --build web",
     "deploy": "deno run -A scripts/deploy.ts"
   }

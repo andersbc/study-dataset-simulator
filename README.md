@@ -22,6 +22,12 @@ A web-based tool for designing and simulating study datasets. This application a
 **Option B: Manual Installation**
 Clone the repository and install dependencies.
 
+```bash
+git clone https://github.com/andersbc/study-dataset-simulator.git
+cd study-dataset-simulator
+cp .env.example .env
+```
+
 **Web App (Nuxt.js):**
 ```bash
 cd apps/web
