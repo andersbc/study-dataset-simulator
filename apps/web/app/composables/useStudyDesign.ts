@@ -56,6 +56,21 @@ export const useStudyDesignActions = () => {
     isPersisted.value = false
   }
 
+  const getAllUsedNames = () => {
+    const names = new Set<string>()
+    if (!design.value.variables) return names
+
+    design.value.variables.forEach(v => {
+      if (v.name) names.add(v.name)
+      if (v.kind === 'instrument' && v.items) {
+        v.items.forEach((item: any) => {
+          if (item.name) names.add(item.name)
+        })
+      }
+    })
+    return names
+  }
+
   return {
     design,
     isPersisted,
@@ -64,7 +79,8 @@ export const useStudyDesignActions = () => {
     removeVariable,
     clearVariables,
     updateVariable,
-    resetDesign
+    resetDesign,
+    getAllUsedNames
   }
 }
 

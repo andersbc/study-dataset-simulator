@@ -26,7 +26,8 @@
           class="flex-grow-1 mr-2" variant="outlined"></v-select>
 
         <v-number-input v-model="newEffect.coefficient" label="Correlation (r)" :min="-1" :max="1" :step="0.1"
-          density="compact" hide-details class="flex-grow-1 mr-2" variant="outlined"></v-number-input>
+          control-variant="split" density="compact" hide-details class="flex-grow-1 mr-2" variant="outlined"
+          :precision="2"></v-number-input>
 
         <v-btn color="primary" icon="mdi-plus" @click="addEffect" :disabled="!isValid"></v-btn>
       </div>
@@ -35,7 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { VNumberInput } from 'vuetify/components/VNumberInput'
 import { EFFECT_CORRELATION, type Effect } from '@sim-site/shared'
 

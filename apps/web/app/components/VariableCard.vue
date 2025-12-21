@@ -34,7 +34,7 @@
                 <v-row align="center" dense>
                   <v-col cols="4">
                     <v-text-field v-model="itemPrefix" label="Prefix (e.g. Q)" density="compact" hide-details
-                      variant="outlined"></v-text-field>
+                      variant="outlined" @input="isPrefixModified = true"></v-text-field>
                   </v-col>
                   <v-col cols="3">
                     <v-text-field v-model.number="itemCount" type="number" label="Count" density="compact" hide-details
@@ -203,8 +203,17 @@ watch(() => props.modelValue, (newVal) => {
 }, { deep: true })
 
 const design = useStudyDesign()
+const { getAllUsedNames } = useStudyDesignActions()
 
-const itemPrefix = ref('Q')
+const itemPrefix = ref(props.modelValue.kind === 'instrument' && props.modelValue.name ? props.modelValue.name : 'Q')
+const isPrefixModified = ref(false)
+
+watch(() => localVar.value.name, (newName) => {
+  if (!isPrefixModified.value && localVar.value.kind === 'instrument') {
+    itemPrefix.value = newName || 'Q'
+  }
+})
+
 const itemCount = ref(5)
 const openPanels = ref(props.modelValue.name ? ['itemtype', 'items', 'scales'] : ['itemtype'])
 
@@ -217,8 +226,15 @@ const rules = {
   variableName: (v: string) => {
     if (validateArk(VariableName, v) !== true) return "Invalid name format (no spaces, can't start with number, max 70 chars)"
 
-    const occupied = getOtherOccupiedNames()
-    if (occupied.has(v)) return "This name is already used by another variable"
+    const occupied = getAllUsedNames()
+    // Exclude own name from the check to allow 'no change' saves
+    if (props.modelValue.name) occupied.delete(props.modelValue.name)
+    // Also need to exclude items OF this instrument if we are renaming the instrument itself,
+    // because getAllUsedNames includes them. But if we rename the instrument to match one of its own items,
+    // that SHOULD be an error (because an item and its parent instrument cannot share a name - technically they could but it's confusing)
+    // Actually, per requirement "item names and variable names alike must be unique", so collision is bad.
+
+    if (occupied.has(v)) return "Name conflicts with another variable or item"
     return true
   }
 }
@@ -243,46 +259,40 @@ const isValid = computed(() => {
     if (new Set(localVar.value.categories).size !== localVar.value.categories.length) return false
   }
 
+  // Check items for instruments
+  if (localVar.value.kind === 'instrument' && localVar.value.items) {
+    for (const item of localVar.value.items) {
+      if (!item.name) return false
+      // reuse the validator function
+      if (isItemNameUnique(item.name, item.id) !== true) return false
+    }
+  }
+
   return true
 })
 
 // Helper to get names used by OTHER variables/instruments in the design
-const getOtherOccupiedNames = () => {
-  const names = new Set<string>()
-  if (!design.value.variables) return names
-
-  design.value.variables.forEach(v => {
-    if (v === props.modelValue) return
-    validNameOrSkip(v.name, names)
-
-    if (v.kind === 'instrument' && v.items) {
-      v.items.forEach((item: any) => validNameOrSkip(item.name, names))
-    }
-  })
-  return names
-}
-
-const validNameOrSkip = (name: string, set: Set<string>) => {
-  if (name && typeof name === 'string') set.add(name)
-}
-
-
-
+// DEPRECATED/REPLACED by getAllUsedNames usage in validation directly
+// kept getting removed in diff? No i'll replace usages.
 
 const generateItems = () => {
   if (!localVar.value.items) localVar.value.items = []
 
-  const occupied = getOtherOccupiedNames()
-  // Also add currently existing items in this instrument to occupied for the purpose of generation
-  localVar.value.items.forEach((i: any) => validNameOrSkip(i.name, occupied))
+  const occupied = getAllUsedNames()
+
+  // Calculate padding based on total count
+  // If count > 9 (2 digits), pad to 2. If > 99 (3 digits), pad to 3.
+  const digits = itemCount.value.toString().length
 
   for (let i = 1; i <= itemCount.value; i++) {
-    let candidate = `${itemPrefix.value}${i}`
+    // Pad the number
+    const numStr = i.toString().padStart(digits, '0')
+    let candidate = `${itemPrefix.value}${numStr}`
     let counter = 1
     // Auto-increment if collision
     while (occupied.has(candidate)) {
       counter++
-      candidate = `${itemPrefix.value}${i}_${counter}` // e.g. Q1_2
+      candidate = `${itemPrefix.value}${numStr}_${counter}` // e.g. Q01_2
     }
 
     // Add to occupied so subsequent iterations respect it
@@ -299,11 +309,41 @@ const generateItems = () => {
 const isItemNameUnique = (name: string, itemId: string) => {
   if (!name) return true
 
-  // 1. Check against other variables/instruments
-  const others = getOtherOccupiedNames()
-  if (others.has(name)) return "Name conflicts with another variable in study"
+  // 1. Check against GLOBAL names
+  const occupied = getAllUsedNames()
 
-  // 2. Check against other items in THIS instrument
+  // Exclude THIS item's original name (if it existed) -> actually getAllUsedNames uses CURRENT state of design.
+  // If we are editing, we are editing localVar. getAllUsedNames reads from design.value (stored state).
+  // items in design.value have OLD names. So occupied has OLD name.
+  // So if I keep name same, occupied has it. Return true?
+
+  // We need to exclude the item's current stored name from the check?
+  // Easier: check against everything EXCEPT the item with this ID.
+
+  // Wait, getAllUsedNames returns strings. It doesn't know IDs.
+  // We have to iterate manually or trust that if name === originalName it's fine.
+
+  // But wait! validation runs on INPUT.
+
+  // Let's rely on getAllUsedNames but remove the name corresponding to this item ID if possible?
+  // No, we can't map ID to name easily from the Set.
+
+  // Let's refine:
+  // We want to check if 'name' exists in the study.
+  // UNLESS 'name' is the name of the item we are currently editing (which might be in the store).
+
+  // Find the original item in the store
+  let originalName = null
+  if (props.modelValue.items) { // checks instrument items
+    const item = props.modelValue.items.find((i: any) => i.id === itemId)
+    if (item) originalName = item.name
+  }
+
+  if (occupied.has(name) && name !== originalName) return "Name conflicts with another variable or item"
+
+  // 2. Check against other items in THIS instrument (which are in localVar, possibly not yet saved to store)
+  // This is actually redundant if everything was saved, but localVar has pending edits.
+  // We must check localVar items too.
   const duplicateInSelf = localVar.value.items?.some((i: any) => i.name === name && i.id !== itemId)
   if (duplicateInSelf) return "Name must be unique within instrument"
 
