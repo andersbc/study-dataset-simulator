@@ -25,3 +25,42 @@ Deno.test("Rate Limiter blocks excessive requests", async () => {
   assertEquals(blockedRes.status, 429);
   assertEquals(await blockedRes.text(), "Too many requests, please try again later.");
 });
+
+Deno.test("POST /validate accepts valid design", async () => {
+  const validDesign = {
+    studyType: "cross-sectional",
+    variables: [
+      { kind: "variable", name: "v1", dataType: "continuous", distribution: { type: "normal", mean: 0, stdDev: 1 } }
+    ]
+  };
+
+  const res = await app.request("/validate", {
+    method: "POST",
+    body: JSON.stringify(validDesign)
+  });
+
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.valid, true);
+});
+
+Deno.test("POST /validate rejects duplicate variables", async () => {
+  const invalidDesign = {
+    studyType: "cross-sectional",
+    variables: [
+      { kind: "variable", name: "v1", dataType: "continuous", distribution: { type: "normal", mean: 0, stdDev: 1 } },
+      { kind: "variable", name: "v1", dataType: "continuous", distribution: { type: "normal", mean: 0, stdDev: 1 } }
+    ]
+  };
+
+  const res = await app.request("/validate", {
+    method: "POST",
+    body: JSON.stringify(invalidDesign)
+  });
+
+  assertEquals(res.status, 400);
+  const body = await res.json();
+  assertEquals(body.valid, false);
+  // @ts-ignore
+  assertEquals(body.details[0].message.includes("Duplicate"), true);
+});

@@ -20,29 +20,39 @@
       <div class="text-subtitle-2 mb-2">New Relationship</div>
       <div class="d-flex align-center gap-4">
         <v-select v-model="newEffect.source" :items="variableNames" label="Variable A" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined"></v-select>
+          class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"></v-select>
 
         <v-select v-model="newEffect.target" :items="variableNames" label="Variable B" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined"></v-select>
+          class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"></v-select>
 
         <v-number-input v-model="newEffect.coefficient" label="Correlation (r)" :min="-1" :max="1" :step="0.1"
-          density="compact" hide-details class="flex-grow-1 mr-2" variant="outlined"></v-number-input>
+          control-variant="split" density="compact" hide-details class="mr-2" style="max-width: 220px"
+          variant="outlined" :precision="2"></v-number-input>
 
-        <v-btn color="primary" icon="mdi-plus" @click="addEffect" :disabled="!isValid"></v-btn>
+        <v-btn color="primary" prepend-icon="mdi-plus" @click="addEffect" :disabled="!isValid">Add</v-btn>
       </div>
     </v-sheet>
   </AppCard>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { VNumberInput } from 'vuetify/components/VNumberInput'
 import { EFFECT_CORRELATION, type Effect } from '@sim-site/shared'
 
 const design = useStudyDesign()
 
 const variableNames = computed(() => {
-  return design.value.variables?.map(v => v.name).filter(n => n) || []
+  if (!design.value.variables) return []
+  return design.value.variables.flatMap(v => {
+    if (v.kind === 'variable') {
+      return [{ title: v.name, value: v.name }]
+    } else if (v.kind === 'instrument') {
+      const items = v.items?.map(i => ({ title: `Item: ${i.name}`, value: i.name })) || []
+      const scales = v.scales?.map(s => ({ title: `Scale: ${s.name}`, value: s.name })) || []
+      return [...items, ...scales]
+    }
+    return []
+  }).filter(n => n.value)
 })
 
 const newEffect = ref<{ source: string, target: string, coefficient: number }>({

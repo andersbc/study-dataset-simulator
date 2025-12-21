@@ -63,7 +63,7 @@ import {
 } from '@sim-site/shared'
 
 const design = useStudyDesign()
-const { addVariable, removeVariable, updateVariable, clearVariables } = useStudyDesignActions()
+const { addVariable, removeVariable, updateVariable, clearVariables, getAllUsedNames } = useStudyDesignActions()
 
 const showClearDialog = ref(false)
 const confirmClear = () => {
@@ -74,7 +74,7 @@ const confirmClear = () => {
 const recentlyAddedNames = ref(new Set<string>())
 
 const generateUniqueName = (prefix: string) => {
-  const existingNames = new Set(design.value.variables?.map((v: any) => v.name) || [])
+  const existingNames = getAllUsedNames()
   let counter = 1
   while (existingNames.has(`${prefix}_${counter}`)) {
     counter++
@@ -99,7 +99,7 @@ const startAddVariable = () => {
 }
 
 const startAddInstrument = () => {
-  const newName = generateUniqueName('instrument')
+  const newName = generateUniqueName('ins')
   recentlyAddedNames.value.add(newName)
 
   const defaultInstrument = {
