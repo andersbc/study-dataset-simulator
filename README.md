@@ -36,7 +36,7 @@ Deno caches dependencies on the fly, so no explicit install step is usually need
 You need to run both the API and the Web application for the full experience.
 
 **Terminal 1: API (Deno)**
-Runs on `http://localhost:8000`. requires Rscript in your PATH.
+Runs on `http://localhost:8000`. Requires `Rscript` in your PATH (automatically handled if using Dev Container).
 ```bash
 # From project root
 deno task dev:api
@@ -80,7 +80,11 @@ This project depends on **R**, **Deno**, and **Node.js**. The recommended way to
 ### Automated Deployment (DigitalOcean)
 The project includes a pre-configured GitHub Actions workflow (`.github/workflows/deploy.yml`) for automated deployment to a DigitalOcean Droplet via SSH. 
 
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for a step-by-step guide on setting this up. **Note:** Since the project uses standard Docker Compose, you can easily swap this out for any other container-based provider (AWS, Fly.io, etc.).
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for a step-by-step guide on setting this up.
+
+**Helper Command**: You can use `deno task deploy` to automate the entire deployment process (PR creation -> Merge -> Monitor). See [DEPLOYMENT.md](DEPLOYMENT.md) for details.
+
+**Note:** Since the project uses standard Docker Compose, you can easily swap this out for any other container-based provider (AWS, Fly.io, etc.).
 
 ### Using Docker Compose (Manual / Local)
 
@@ -133,8 +137,9 @@ docker run -p 3000:3000 sim-site-web
  2.  **Pull Request**: Open a PR to merge into `dev` (or `main` for hotfixes).
  3.  **Production**: Merging to `main` **automatically triggers a deployment** to the live server.
  
- **Note for Forks**: The GitHub Action is configured to **skip deployment** if run from a forked repository. You can safely fork and run tests without worrying about failing connection attempts to the production server.
  
+ **Note for Forks**: The GitHub Action is configured to **skip deployment** if run from a forked repository. You can safely fork and run tests without worrying about failing connection attempts to the production server.
+
  ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

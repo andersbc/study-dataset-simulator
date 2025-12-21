@@ -20,6 +20,7 @@ jobs:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
+          command_timeout: 30m
           script: |
             # Navigate to directory (clone if doesn't exist - one time setup usually done manually, but good to be safe)
             if [ ! -d "/root/sim-site" ]; then

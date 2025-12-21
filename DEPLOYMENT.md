@@ -57,5 +57,18 @@ We have created `.github/workflows/deploy.yml`. For it to work, you need to add 
 
 ## Troubleshooting
 
--   **Permission Denied**: Check that the public key of the key pair in `DO_SSH_KEY` is actually in `~/.ssh/authorized_keys` on the server.
 -   **Env Vars**: If you have secrets in `.env`, you must create that file manually on the server (`nano .env`) as it is not committed to git.
+
+## 4. Standard Deployment Procedure
+
+To deploy changes from `dev` to `main`, use the helper task:
+
+```bash
+deno task deploy
+```
+
+This is a convenience wrapper that automates the standard workflow:
+1.  **Safety Checks**: Verifies `gh` is installed and that there are no uncommitted changes.
+2.  **PR Creation**: Creates a Pull Request from `dev` to `main` with a standard title.
+3.  **Merging**: Automatically merges the PR (triggering the GitHub Action).
+4.  **Monitoring**: Streams the live logs from the GitHub Action to your terminal so you can watch the deployment progress.
