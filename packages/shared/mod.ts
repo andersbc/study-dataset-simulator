@@ -142,3 +142,9 @@ export const StudyDesignSchema = type({
 
 export type StudyDesign = typeof StudyDesignSchema.infer;
 export type Variable = typeof VariableSchema.infer;
+
+export * from './r_generator.ts';
+export * from './validator.ts';
+
+export const MAX_GENERATION_N = 10000;
+export const PREVIEW_LIMIT = 10;

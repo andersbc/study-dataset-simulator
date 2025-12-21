@@ -36,14 +36,27 @@
         </div>
       </v-expand-transition>
     </div>
+    <div class="flex-grow-0 d-flex flex-column align-end ml-4">
+      <v-btn color="error" variant="text" size="small" prepend-icon="mdi-restart" @click="reset">
+        New Study
+      </v-btn>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
+const { resetDesign } = useStudyDesignActions()
+
 const showInfo = ref(false)
 const isAlignedTop = ref(false)
+
+const reset = () => {
+  if (confirm("Are you sure you want to start a new study? This will clear all variables and settings.")) {
+    resetDesign()
+  }
+}
 
 watch(showInfo, (val) => {
   if (val) isAlignedTop.value = true

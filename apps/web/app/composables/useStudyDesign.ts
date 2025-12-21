@@ -17,7 +17,8 @@ export const useStudyDesignActions = () => {
     if (!design.value.variables) {
       design.value.variables = []
     }
-    design.value.variables.push(variable)
+    // Deep clone to ensure no shared references
+    design.value.variables.push(JSON.parse(JSON.stringify(variable)))
   }
 
   const removeVariable = (index: number) => {

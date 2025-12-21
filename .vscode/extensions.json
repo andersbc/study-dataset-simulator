@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "Vue.volar",
-    "denoland.vscode-deno"
+    "denoland.vscode-deno",
+    "reditorsupport.r"
   ]
 }

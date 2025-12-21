@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-import { StudyDesignSchema } from '@sim-site/shared';
-import { type } from 'arktype';
+import { validateStudyDesign, MAX_GENERATION_N } from '@sim-site/shared';
 
 export const app = new Hono();
 
@@ -12,7 +11,6 @@ app.use('/*', async (c, next) => {
   await next();
 });
 
-import type { Context } from 'hono';
 
 // Rate limiter
 app.use('/*', rateLimiter({
@@ -41,18 +39,36 @@ app.get('/', (c) => {
 
 app.post('/validate', async (c) => {
   const body = await c.req.json();
-  const result = StudyDesignSchema(body);
+  const result = validateStudyDesign(body);
 
-  if (result instanceof type.errors) {
-    return c.json({ valid: false, errors: result.summary }, 400);
+  if (!result.valid) {
+    const summary = result.errors.map(e => `${e.path}: ${e.message}`).join(', ');
+    return c.json({ valid: false, errors: summary, details: result.errors }, 400);
   }
 
-  return c.json({ valid: true, data: result });
+  return c.json({ valid: true, data: body });
 });
 
 app.post('/generate', async (c) => {
   try {
-    const data = await generateDummyData();
+    // The body might be the design object directly OR a wrapper { design: ..., n: ... }
+    const body = await c.req.json();
+
+    // Check for wrapper format
+    let design = body;
+    let n = 100;
+
+    if ('design' in body && 'n' in body) {
+      design = body.design;
+      n = Number(body.n) || 100;
+      if (n < 1) n = 1;
+
+      if (n > MAX_GENERATION_N) {
+        return c.json({ success: false, error: `Sample size exceeds limit of ${MAX_GENERATION_N}` }, 400);
+      }
+    }
+
+    const data = await generateDummyData(design, n);
     return c.json({ success: true, data });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
