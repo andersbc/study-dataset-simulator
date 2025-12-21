@@ -294,26 +294,17 @@ app.onError((err, c) => {
 });
 
 app.post('/auth/validate', async (c) => {
-  console.log('[Auth] Validate request received');
   let password: string | undefined;
   try {
     const body = await c.req.json();
     password = body.password;
-    console.log(`[Auth] Received password: "${password}" (length: ${password?.length})`);
-  } catch (e) {
-    console.error('[Auth] JSON parse error:', e);
+  } catch (_e) {
     return c.json({ valid: false, role: null, error: "Invalid JSON body" }, 400);
   }
 
   // Use dynamic config
   const sitePw = configService.accessPassword;
   const logsPw = Deno.env.get('ADMIN_PASSWORD');
-
-  console.log(`[Auth] Debug Check:`);
-  console.log(`   - Expected Site PW: "${sitePw}" (length: ${sitePw?.length})`);
-  console.log(`   - Expected Logs PW: "${logsPw}" (length: ${logsPw?.length})`);
-  console.log(`   - Input matches Site? ${password === sitePw}`);
-  console.log(`   - Input matches Logs? ${password === logsPw}`);
 
   if (password && logsPw && password === logsPw) {
     return c.json({ valid: true, role: 'admin' });
@@ -322,7 +313,7 @@ app.post('/auth/validate', async (c) => {
     return c.json({ valid: true, role: 'guest' });
   }
 
-  console.warn('[Auth] validation failed.');
+
   return c.json({ valid: false, role: null }, 401);
 });
 
