@@ -16,7 +16,14 @@
 
     <v-alert v-if="error" type="error" variant="tonal" class="mb-4" density="compact" closable
       @click:close="error = ''">
-      {{ error }}
+      <div v-if="isAuthError" class="d-flex align-center">
+        <span>{{ error }}</span>
+        <v-btn to="/login" variant="text" size="small" class="ml-2 text-decoration-underline font-weight-bold"
+          prepend-icon="mdi-login">
+          Go to Login
+        </v-btn>
+      </div>
+      <span v-else>{{ error }}</span>
     </v-alert>
 
     <div v-if="generatedData" class="mt-4">
@@ -46,6 +53,7 @@ import { generateRScript, validateStudyDesign, MAX_GENERATION_N, PREVIEW_LIMIT }
 
 const loading = ref(false)
 const error = ref('')
+const isAuthError = ref(false)
 const generatedData = ref<any[] | null>(null)
 const sampleSize = ref(100)
 
@@ -130,7 +138,13 @@ const generateData = async () => {
     downloadCSV(result.data)
   } catch (err: any) {
     console.error(err)
-    error.value = err.message || 'An unexpected error occurred'
+    if (err.statusCode === 401 || err.status === 401) {
+      isAuthError.value = true
+      error.value = "You must login to perform this action."
+    } else {
+      isAuthError.value = false
+      error.value = err.message || 'An unexpected error occurred'
+    }
   } finally {
     loading.value = false
   }

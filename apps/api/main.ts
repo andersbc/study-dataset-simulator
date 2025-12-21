@@ -167,7 +167,7 @@ app.use('/*', rateLimiter({
 // Add CORS middleware
 app.use('/*', async (c, next) => {
   c.res.headers.set('Access-Control-Allow-Origin', '*');
-  c.res.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  c.res.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE');
   c.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Sim-Auth');
   if (c.req.method === 'OPTIONS') {
     return c.body(null, 204);
@@ -181,6 +181,11 @@ app.get('/', (c) => {
   return c.text('Sim Site API');
 });
 
+import { configService } from './config_service.ts';
+
+// Initialize Config (async load)
+await configService.loadConfig();
+
 // Authentication Middleware
 app.use('/*', async (c, next) => {
   // Allow public endpoints
@@ -190,21 +195,25 @@ app.use('/*', async (c, next) => {
     return;
   }
 
-  const sitePw = Deno.env.get('ACCESS_PASSWORD');
+  const sitePw = configService.accessPassword;
   const logsPw = Deno.env.get('ADMIN_PASSWORD');
-  // Default to true if not set
-  const authEnabled = Deno.env.get('AUTH_ENABLED') !== 'false';
+  // Dynamic Auth Status
+  const authEnabled = configService.authEnabled;
 
   if (!sitePw || !logsPw) {
-    console.warn("Missing ACCESS_PASSWORD or ADMIN_PASSWORD env vars. Allowing access (unsafe mode).");
+    console.warn("Missing ACCESS_PASSWORD or ADMIN_PASSWORD. Allowing access (unsafe mode).");
     await next();
     return;
   }
 
-  const authHeader = c.req.header('X-Sim-Auth');
+  let authHeader = c.req.header('X-Sim-Auth');
+  // Allow token via query param for logs download (browser link support)
+  if (!authHeader && url.pathname === '/logs/download') {
+    authHeader = url.searchParams.get('token') || undefined;
+  }
 
-  // Check Logs Access (ALWAYS requires Admin PW)
-  if (url.pathname.startsWith('/logs')) {
+  // Check Logs and Admin Access (ALWAYS requires Admin PW)
+  if (url.pathname.startsWith('/logs') || url.pathname.startsWith('/admin')) {
     if (authHeader === logsPw) {
       await next();
       return;
@@ -229,8 +238,53 @@ app.use('/*', async (c, next) => {
 });
 
 app.get('/auth/status', (c) => {
-  const authEnabled = Deno.env.get('AUTH_ENABLED') !== 'false';
-  return c.json({ siteAuthEnabled: authEnabled });
+  return c.json({ siteAuthEnabled: configService.authEnabled });
+});
+
+// Admin Configuration Endpoints
+app.get('/admin/config', (c) => {
+  // Middleware already ensures only Admin/Site PW gets here, but we want STRICT ADMIN ONLY?
+  // The middleware allows Site PW for general usage.
+  // We need to re-verify strictly for ADMIN_PASSWORD here or assume middleware handles "logs" path logic?
+  // Since this is a new path '/admin', the generic middleware might allow Site PW.
+  // We should enforce strict Admin check for /admin/* in middleware or here.
+
+  // Let's add a strict guard here for safety, or better: update Middleware to protect /admin like /logs
+  const authHeader = c.req.header('X-Sim-Auth');
+  const logsPw = Deno.env.get('ADMIN_PASSWORD');
+  if (authHeader !== logsPw) {
+    return c.json({ error: 'Unauthorized: Admin access required' }, 401);
+  }
+
+  return c.json({
+    authEnabled: configService.authEnabled,
+    // redact password for security? Or show it? 
+    // Usually show it masked or just empty. User wants to "change" it.
+    // For simplicity, let's return it so they can see current value (it's admin only).
+    accessPassword: configService.accessPassword
+  });
+});
+
+app.post('/admin/config', async (c) => {
+  const authHeader = c.req.header('X-Sim-Auth');
+  const logsPw = Deno.env.get('ADMIN_PASSWORD');
+  if (authHeader !== logsPw) {
+    return c.json({ error: 'Unauthorized: Admin access required' }, 401);
+  }
+
+  try {
+    const body = await c.req.json();
+    if (typeof body.authEnabled === 'boolean') {
+      configService.setAuthEnabled(body.authEnabled);
+    }
+    if (body.accessPassword && typeof body.accessPassword === 'string') {
+      configService.setAccessPassword(body.accessPassword);
+    }
+    await configService.saveConfig();
+    return c.json({ success: true });
+  } catch (e) {
+    return c.json({ success: false, error: 'Invalid body' }, 400);
+  }
 });
 
 
@@ -251,7 +305,8 @@ app.post('/auth/validate', async (c) => {
     return c.json({ valid: false, role: null, error: "Invalid JSON body" }, 400);
   }
 
-  const sitePw = Deno.env.get('ACCESS_PASSWORD');
+  // Use dynamic config
+  const sitePw = configService.accessPassword;
   const logsPw = Deno.env.get('ADMIN_PASSWORD');
 
   if (password && logsPw && password === logsPw) {
@@ -398,6 +453,24 @@ app.get('/logs', async (c) => {
     return c.json({ success: true, logs: recent });
   } catch (e) {
     return c.json({ success: false, error: "No logs found or error reading" }, 404);
+  }
+});
+
+app.delete('/logs', async (c) => {
+  const authHeader = c.req.header('X-Sim-Auth');
+  const logsPw = Deno.env.get('ADMIN_PASSWORD');
+
+  if (authHeader !== logsPw) {
+    return c.json({ error: 'Unauthorized: Admin access required' }, 401);
+  }
+
+  try {
+    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+    await Deno.writeTextFile(logPath, ''); // Truncate file
+    currentLogEntries = 0; // Reset counter
+    return c.json({ success: true });
+  } catch (e) {
+    return c.json({ success: false, error: "Failed to clear logs" }, 500);
   }
 });
 

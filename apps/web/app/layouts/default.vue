@@ -10,7 +10,7 @@
       </v-app-bar-title>
 
       <template #append>
-        <template v-if="route.path !== '/logs'">
+        <template v-if="route.path !== '/logs' && route.path !== '/admin'">
           <v-btn icon="mdi-undo" variant="text" :disabled="!canUndo" @click="undo" v-tooltip="'Undo'"
             class="mr-2"></v-btn>
           <v-btn icon="mdi-redo" variant="text" :disabled="!canRedo" @click="redo" v-tooltip="'Redo'"

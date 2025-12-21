@@ -24,3 +24,6 @@ lcov.info
 # Logs
 logs
 *.log
+
+# Data (Sensitive config)
+data/

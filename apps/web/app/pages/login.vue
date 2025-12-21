@@ -54,8 +54,8 @@ async function handleLogin() {
     console.log('[Login] Resolved redirectPath:', redirectPath)
 
     // Check if user has permission for the redirect path
-    if (redirectPath.startsWith('/logs') && !isAdmin.value) {
-      error.value = 'Admin password required for logs access.'
+    if ((redirectPath.startsWith('/logs') || redirectPath.startsWith('/admin')) && !isAdmin.value) {
+      error.value = 'Admin password required for access.'
       loading.value = false
       return
     }
