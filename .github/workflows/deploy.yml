@@ -36,7 +36,9 @@ jobs:
           file: apps/api/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}/api:latest
-          cache-from: type=gha
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/${{ github.repository }}/api:latest
           cache-to: type=gha,mode=max
 
       - name: Build and push Web
@@ -46,7 +48,9 @@ jobs:
           file: apps/web/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}/web:latest
-          cache-from: type=gha
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/${{ github.repository }}/web:latest
           cache-to: type=gha,mode=max
 
   deploy:
