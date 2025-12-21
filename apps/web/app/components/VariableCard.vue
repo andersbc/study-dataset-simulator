@@ -299,7 +299,7 @@ const generateItems = () => {
     occupied.add(candidate)
 
     localVar.value.items.push({
-      id: crypto.randomUUID(),
+      id: getUUID(),
       name: candidate
     })
   }
@@ -334,7 +334,7 @@ const isItemNameUnique = (name: string, itemId: string) => {
 
   // Find the original item in the store
   let originalName = null
-  if (props.modelValue.items) { // checks instrument items
+  if (props.modelValue.kind === 'instrument') { // checks instrument items
     const item = props.modelValue.items.find((i: any) => i.id === itemId)
     if (item) originalName = item.name
   }
@@ -355,7 +355,7 @@ const addScale = () => {
   if (newScaleName.value) {
     if (!localVar.value.scales) localVar.value.scales = []
     localVar.value.scales.push({
-      id: crypto.randomUUID(),
+      id: getUUID(),
       name: newScaleName.value,
       items: []
     })
@@ -433,6 +433,17 @@ const cancel = () => {
     isEditing.value = false
     localVar.value = JSON.parse(JSON.stringify(props.modelValue)) // Revert
   }
+}
+
+// Helper to generate UUIDs even in insecure context (deployment via IP) where crypto.randomUUID is missing
+const getUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 const save = () => {

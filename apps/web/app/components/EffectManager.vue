@@ -69,11 +69,21 @@ const isValid = computed(() => {
     newEffect.value.coefficient <= 1
 })
 
+const getUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const addEffect = () => {
   if (!isValid.value) return
 
   const effect: Effect = {
-    id: crypto.randomUUID(),
+    id: getUUID(),
     type: EFFECT_CORRELATION,
     source: newEffect.value.source,
     target: newEffect.value.target,
