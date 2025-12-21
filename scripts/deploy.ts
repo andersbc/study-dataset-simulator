@@ -24,7 +24,7 @@ async function deploy() {
     }
   }
 
-  // 1. Check if we are on dev (optional, but good safety)
+  // 1. Check if we are on dev (optional, but good safety) 
   // Skipped for now, assume user knows they are deploying dev->main content
 
   // 2. Check for existing PR
