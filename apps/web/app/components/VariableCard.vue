@@ -23,14 +23,14 @@
             <v-expansion-panel value="itemtype">
               <v-expansion-panel-title class="text-uppercase font-weight-bold">Variables (Item
                 type)</v-expansion-panel-title>
-              <v-expansion-panel-text>
+              <v-expansion-panel-text class="pt-4">
                 <VariableConfiguration v-model="localVar" />
               </v-expansion-panel-text>
             </v-expansion-panel>
 
             <v-expansion-panel value="items">
               <v-expansion-panel-title class="text-uppercase font-weight-bold">Items</v-expansion-panel-title>
-              <v-expansion-panel-text>
+              <v-expansion-panel-text class="pt-4">
                 <v-row align="center" dense>
                   <v-col cols="4">
                     <v-text-field v-model="itemPrefix" label="Prefix (e.g. Q)" density="compact" hide-details
@@ -69,7 +69,7 @@
 
             <v-expansion-panel value="scales">
               <v-expansion-panel-title class="text-uppercase font-weight-bold">Scales</v-expansion-panel-title>
-              <v-expansion-panel-text>
+              <v-expansion-panel-text class="pt-4">
                 <div class="text-caption text-medium-emphasis mb-2">
                   Define scales by grouping items.
                 </div>

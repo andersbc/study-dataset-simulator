@@ -52,7 +52,7 @@ export const useStudyDesignActions = () => {
       variables: [],
       effects: []
     }
-    localStorage.removeItem('study-design-v1')
+    sessionStorage.removeItem('study-design-v1')
     isPersisted.value = false
   }
 
@@ -74,7 +74,7 @@ export const useStudyPersistence = () => {
 
   onMounted(() => {
     let isHydrating = false
-    const saved = localStorage.getItem('study-design-v1')
+    const saved = sessionStorage.getItem('study-design-v1')
 
     if (saved) {
       try {
@@ -102,7 +102,7 @@ export const useStudyPersistence = () => {
       if (isHydrating) return
 
       isPersisted.value = false
-      localStorage.setItem('study-design-v1', JSON.stringify(newVal))
+      sessionStorage.setItem('study-design-v1', JSON.stringify(newVal))
     }, { deep: true })
   })
 }

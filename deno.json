@@ -3,6 +3,11 @@
     "./apps/api",
     "./packages/shared"
   ],
+  "imports": {
+    "@std/csv": "jsr:@std/csv@0.224.0",
+    "hono": "npm:hono@4.1.0",
+    "hono-rate-limiter": "npm:hono-rate-limiter@0.4.0"
+  },
   "tasks": {
     "dev:api": "deno task --cwd apps/api dev",
     "test:api": "deno task --cwd apps/api test",

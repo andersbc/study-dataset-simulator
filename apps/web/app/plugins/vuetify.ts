@@ -23,12 +23,14 @@ export default defineNuxtPlugin((nuxtApp) => {
           colors: {
             background: '#EEF2F6', // More distinct cool grey
             surface: '#FFFFFF',
+            'form-surface': '#F5F5F5', // grey-lighten-4
           },
         },
         dark: {
           colors: {
             background: '#121212', // Standard dark background
             surface: '#1E1E1E', // Slightly lighter surface for cards
+            'form-surface': '#424242', // grey-darken-3
           },
         },
       },
