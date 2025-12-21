@@ -54,8 +54,20 @@ async function deploy() {
     await $`gh pr merge dev --merge --auto`;
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    console.error("❌ Merge failed. Please check manual status.", message);
-    Deno.exit(1);
+    // Handle "clean status" error (happens when no checks are required/pending so auto-merge fails)
+    if (message.includes("clean status")) {
+      console.log("ℹ️  PR is ready to merge immediately (no auto-merge needed). Merging now...");
+      try {
+        await $`gh pr merge dev --merge`;
+      } catch (retryError: unknown) {
+        const retryMessage = retryError instanceof Error ? retryError.message : String(retryError);
+        console.error("❌ Retry merge failed.", retryMessage);
+        Deno.exit(1);
+      }
+    } else {
+      console.error("❌ Merge failed. Please check manual status.", message);
+      Deno.exit(1);
+    }
   }
 
   // 4. Watch
