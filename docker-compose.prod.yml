@@ -1,4 +1,10 @@
 services:
+  api:
+    image: ghcr.io/andersbc/study-dataset-simulator/api:latest
+    restart: always
+
   web:
+    image: ghcr.io/andersbc/study-dataset-simulator/web:latest
     ports:
       - "80:3000"
+    restart: always

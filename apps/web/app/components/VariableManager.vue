@@ -13,7 +13,9 @@
           <draggable v-model="design.variables" handle=".drag-handle" item-key="name" ghost-class="ghost-card"
             fallback-class="drag-card" :force-fallback="true">
             <template #item="{ element: variable, index }">
-              <VariableCard :model-value="variable" :start-expanded="!variable.name"
+              <VariableCard :model-value="variable"
+                :start-expanded="!variable.name || recentlyAddedNames.has(variable.name)"
+                :is-new="!variable.name || recentlyAddedNames.has(variable.name)"
                 @update:model-value="(val) => handleUpdate(index, val)" @remove="() => handleRemove(index)" />
             </template>
           </draggable>
@@ -69,33 +71,40 @@ const confirmClear = () => {
   showClearDialog.value = false
 }
 
+const recentlyAddedNames = ref(new Set<string>())
+
+const generateUniqueName = (prefix: string) => {
+  const existingNames = new Set(design.value.variables?.map((v: any) => v.name) || [])
+  let counter = 1
+  while (existingNames.has(`${prefix}_${counter}`)) {
+    counter++
+  }
+  return `${prefix}_${counter}`
+}
+
 const startAddVariable = () => {
+  const newName = generateUniqueName('var')
+  recentlyAddedNames.value.add(newName)
+
   const defaultVar = {
     // @ts-ignore
     kind: 'variable',
-    name: '',
+    name: newName,
     dataType: VAR_CONTINUOUS,
     distribution: { type: DIST_NORMAL, mean: 0, stdDev: 1 },
     categories: []
   }
 
-  // Add with startExpanded=true implicitly handled by checking if name is empty in VariableCard
-  // But wait, VariableCard init state depends on props.startExpanded.
-  // We need to pass that prop for *new* items.
-  // But our list iteration only passes the variable.
-  // How do we tell specific items to start expanded?
-  // We can add a temporary property to the variable object itself, or track a set of IDs.
-  // But Variable type is strict.
-  // Actually, I can just rely on `startExpanded={(variableKey === lastAddedKey)}` if I track it.
-  // OR simply: if `variable.name` is empty, it starts expanded.
-
   addVariable(defaultVar as Variable)
 }
 
 const startAddInstrument = () => {
+  const newName = generateUniqueName('instrument')
+  recentlyAddedNames.value.add(newName)
+
   const defaultInstrument = {
     kind: 'instrument',
-    name: '',
+    name: newName,
     dataType: VAR_ORDINAL,
     distribution: { type: DIST_NORMAL, mean: 0, stdDev: 1 },
     categories: [],
@@ -107,6 +116,10 @@ const startAddInstrument = () => {
 }
 
 const handleUpdate = (index: number, val: Variable | Instrument) => {
+  if (design.value.variables && design.value.variables[index]) {
+    const oldName = design.value.variables[index].name
+    recentlyAddedNames.value.delete(oldName)
+  }
   updateVariable(index, val)
 }
 

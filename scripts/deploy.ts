@@ -71,9 +71,21 @@ async function deploy() {
   }
 
   // 4. Watch
-  console.log("👀 Watching deployment...");
+  console.log("👀 Waiting for deployment workflow to start...");
+  // Give GitHub a moment to trigger the workflow
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   try {
-    await $`gh run watch`;
+    // We need to explicitly look for the run on 'main' because we are likely on 'dev'
+    // and 'gh run watch' defaults to the current branch.
+    const runId = await $`gh run list --workflow deploy.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId'`.text();
+
+    if (runId.trim()) {
+      console.log(`🚀 Watching workflow run #${runId.trim()}...`);
+      await $`gh run watch ${runId.trim()} --exit-status`;
+    } else {
+      console.log("⚠️  Could not find a running workflow on 'main'. It might be queued or failed to trigger.");
+    }
   } catch (_e: unknown) {
     console.log("Done. (Monitor exited, likely no active runs)");
   }
