@@ -10,15 +10,20 @@
       </v-app-bar-title>
 
       <template #append>
-        <v-btn icon="mdi-undo" variant="text" :disabled="!canUndo" @click="undo" v-tooltip="'Undo'"
-          class="mr-2"></v-btn>
-        <v-btn icon="mdi-redo" variant="text" :disabled="!canRedo" @click="redo" v-tooltip="'Redo'"
-          class="mr-2"></v-btn>
-        <v-divider vertical class="mx-2 my-auto" style="height: 24px"></v-divider>
+        <template v-if="route.path !== '/logs'">
+          <v-btn icon="mdi-undo" variant="text" :disabled="!canUndo" @click="undo" v-tooltip="'Undo'"
+            class="mr-2"></v-btn>
+          <v-btn icon="mdi-redo" variant="text" :disabled="!canRedo" @click="redo" v-tooltip="'Redo'"
+            class="mr-2"></v-btn>
+          <v-divider vertical class="mx-2 my-auto" style="height: 24px"></v-divider>
+        </template>
         <v-btn icon="mdi-github" href="https://github.com/andersbc/study-dataset-simulator" target="_blank"
           v-tooltip="'View Source'"></v-btn>
         <v-btn :icon="theme.global.name.value === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
           @click="toggleTheme" v-tooltip="'Toggle Theme'"></v-btn>
+
+        <v-divider vertical class="mx-2 my-auto" style="height: 24px" v-if="isAuthenticated"></v-divider>
+        <v-btn v-if="isAuthenticated" icon="mdi-logout" @click="logout" v-tooltip="'Logout'" variant="text"></v-btn>
       </template>
     </v-app-bar>
     <v-main>
@@ -32,15 +37,16 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { useStudyHistory } from '~/composables/useStudyDesign'
+import { useAuth } from '~/composables/useAuth'
 
 const { undo, redo, canUndo, canRedo } = useStudyHistory()
+const { isAuthenticated, logout } = useAuth()
+const route = useRoute()
 
 const theme = useTheme()
 
 const toggleTheme = () => {
   const newVal = theme.global.name.value === 'dark' ? 'light' : 'dark'
-  theme.global.name.value = newVal
-  localStorage.setItem('theme', newVal)
   theme.global.name.value = newVal
   localStorage.setItem('theme', newVal)
 }

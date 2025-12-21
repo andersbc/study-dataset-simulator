@@ -36,7 +36,10 @@
         </div>
       </v-expand-transition>
     </div>
-    <div class="flex-grow-0 d-flex flex-column align-end ml-4">
+    <div class="flex-grow-0 d-flex flex-column align-end ml-4 gap-2">
+      <v-btn to="/logs" variant="text" size="small" prepend-icon="mdi-history">
+        Logs
+      </v-btn>
       <v-btn color="error" variant="text" size="small" prepend-icon="mdi-restart" @click="reset">
         New Study
       </v-btn>

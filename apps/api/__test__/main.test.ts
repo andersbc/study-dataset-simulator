@@ -64,3 +64,65 @@ Deno.test("POST /validate rejects duplicate variables", async () => {
   // @ts-ignore
   assertEquals(body.details[0].message.includes("Duplicate"), true);
 });
+
+Deno.test("POST /generate logs the request", async () => {
+  const design = {
+    studyType: "cross-sectional",
+    variables: [
+      { kind: "variable", name: "v1", dataType: "continuous", distribution: { type: "normal", mean: 0, stdDev: 1 } }
+    ]
+  };
+
+  const res = await app.request("/generate", {
+    method: "POST",
+    body: JSON.stringify({ design, n: 10 })
+  });
+
+  assertEquals(res.status, 200);
+
+  // Verify log existence
+  const logContent = await Deno.readTextFile("logs/requests.jsonl");
+  // Check if our variable "v1" is in the log
+  assertEquals(logContent.includes('"v1"'), true);
+  assertEquals(logContent.includes('"result":"success"'), true);
+});
+
+Deno.test("POST /generate logs full request on failure", async () => {
+  const design = { variables: [] };
+  // Trigger error with excessive N
+  const hugeN = 1000000;
+
+  const res = await app.request("/generate", {
+    method: "POST",
+    body: JSON.stringify({ design, n: hugeN })
+  });
+
+  assertEquals(res.status, 500); // Or 400? The code throws Error, catches, returns 500.
+
+  const logContent = await Deno.readTextFile("logs/requests.jsonl");
+  // Only check the last line or just inclusion
+  const lines = logContent.trim().split('\n');
+  const lastLine = lines[lines.length - 1];
+
+  assertEquals(lastLine.includes('"result":"failure"'), true);
+  assertEquals(lastLine.includes('"fullRequest"'), true);
+  assertEquals(lastLine.includes(`${hugeN}`), true);
+});
+
+Deno.test("GET /logs returns recent logs", async () => {
+  const res = await app.request("/logs");
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.success, true);
+  assertEquals(Array.isArray(body.logs), true);
+  // We know we just ran tests that generated logs
+  assertEquals(body.logs.length > 0, true);
+});
+
+Deno.test("GET /logs/download returns file stream", async () => {
+  const res = await app.request("/logs/download");
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("Content-Disposition"), 'attachment; filename="requests.jsonl"');
+  // Consume body to ensure it works
+  await res.text();
+});

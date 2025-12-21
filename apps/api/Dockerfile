@@ -34,4 +34,4 @@ WORKDIR /app/apps/api
 EXPOSE 8000
 
 # Run the API
-CMD ["deno", "run", "--allow-net", "--allow-run", "main.ts"]
+CMD ["deno", "run", "--allow-net", "--allow-run", "--allow-read", "--allow-write", "--allow-env", "main.ts"]
