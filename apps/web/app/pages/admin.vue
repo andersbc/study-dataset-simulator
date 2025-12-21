@@ -156,7 +156,19 @@
 
 <script setup lang="ts">
 definePageMeta({
-  // middleware: ['global-auth'] // global-auth runs automatically via plugin
+  middleware: [
+    function (to, from) {
+      const { isAdmin } = useAuth();
+      if (!isAdmin.value) {
+        return navigateTo({
+          path: '/login',
+          query: {
+            redirect: to.fullPath
+          }
+        });
+      }
+    }
+  ]
 });
 
 const { isAdmin, token, siteAuthEnabled } = useAuth();
@@ -177,10 +189,9 @@ const form = reactive({
 });
 
 async function loadConfig() {
-  if (!isAdmin.value) {
-    router.push('/login');
-    return;
-  }
+  // Triple check permissions before loading data
+  if (!isAdmin.value) return;
+
   loading.value = true;
   try {
     const apiBase = import.meta.client ? config.public.apiBase : config.serverApiBase;
@@ -197,6 +208,12 @@ async function loadConfig() {
     loading.value = false;
   }
 }
+// ... (rest of code) ...
+// Init
+onMounted(() => {
+  loadConfig();
+  fetchLogs();
+});
 
 async function saveSettings() {
   loading.value = true;
