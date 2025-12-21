@@ -24,7 +24,7 @@ async function deploy() {
     }
   }
 
-  // 1. Check if we are on dev (optional, but good safety)
+  // 1. Check if we are on dev (optional, but good safety) 
   // Skipped for now, assume user knows they are deploying dev->main content
 
   // 2. Check for existing PR
@@ -51,17 +51,22 @@ async function deploy() {
   console.log("🔀 Merging PR...");
   try {
     // --admin flag might be needed if branch protection is on, but standard repo is fine
-    await $`gh pr merge dev --merge --auto`;
+    await $`gh pr merge dev --merge --auto`.quiet();
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : String(e);
+    // dax error parsing
+    const err = e as { message: string; stdout?: string; stderr?: string };
+    const message = err.message || "";
+    // Sometimes the output is in stdout/stderr properties of the error object if dax captures it
+    const combinedOutput = (err.stdout || "") + (err.stderr || "") + message;
+
     // Handle "clean status" error (happens when no checks are required/pending so auto-merge fails)
-    if (message.includes("clean status")) {
+    if (combinedOutput.includes("clean status")) {
       console.log("ℹ️  PR is ready to merge immediately (no auto-merge needed). Merging now...");
       try {
         await $`gh pr merge dev --merge`;
-      } catch (retryError: unknown) {
-        const retryMessage = retryError instanceof Error ? retryError.message : String(retryError);
-        console.error("❌ Retry merge failed.", retryMessage);
+      } catch (innerE: unknown) {
+        const innerErr = innerE as Error;
+        console.error("❌ Fallback merge failed.", innerErr.message);
         Deno.exit(1);
       }
     } else {
