@@ -18,6 +18,7 @@ dist/
 # Deno
 cov_profile
 lcov.info
+.deno_cache/
 
 # Editor / OS
 .vscode/*

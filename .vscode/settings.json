@@ -1,0 +1,13 @@
+{
+  "deno.enablePaths": [
+    "./apps/api",
+    "./packages/shared",
+    "./scripts",
+    "./deno.json"
+  ],
+  "deno.unstable": [],
+  "deno.lint": true,
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  }
+}

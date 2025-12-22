@@ -2,10 +2,19 @@
 import { assertEquals, assertNotEquals } from "@std/assert";
 import { app } from "../main.ts";
 
+import { configService } from "../config_service.ts";
+
 Deno.test("Auth Middleware Tests", async (t) => {
   // 1. Setup Env
-  Deno.env.set("ACCESS_PASSWORD", "test-site-pw");
+  // We must set it via configService because it is initialized at module load time
+  // and env vars set here are too late for the initial load, though accessible if read dynamically.
+  // configService caches the initial env var value.
+  const originalPw = configService.accessPassword;
+  const originalAdmin = Deno.env.get("ADMIN_PASSWORD");
+
+  configService.setAccessPassword("test-site-pw");
   Deno.env.set("ADMIN_PASSWORD", "test-logs-pw");
+  configService.setAuthEnabled(true);
 
   // 2. Helper to fetch with header
   const fetchWithAuth = async (path: string, auth?: string, method: string = "GET", body?: BodyInit | null, contentType?: string) => {
@@ -102,6 +111,9 @@ Deno.test("Auth Middleware Tests", async (t) => {
   });
 
   // Cleanup
-  Deno.env.delete("ACCESS_PASSWORD");
-  Deno.env.delete("ADMIN_PASSWORD");
+  if (originalPw) configService.setAccessPassword(originalPw);
+  else configService.setAccessPassword(""); // or undefined if type allowed, but setter takes string.
+
+  if (originalAdmin) Deno.env.set("ADMIN_PASSWORD", originalAdmin);
+  else Deno.env.delete("ADMIN_PASSWORD");
 });

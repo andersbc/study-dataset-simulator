@@ -97,7 +97,10 @@ generate_study <- function(n, design) {
     }
 
     # Define & Generate Single Column
-    def <- defData(NULL, varname=node$name, formula=formula, variance=variance, dist=dist_type)
+    # Define & Generate Single Column
+    def <- data.table(varname=node$name, formula=formula, variance=variance, dist=dist_type, link=link)
+    setattr(def, "class", c("defData", "data.table", "data.frame"))
+    
     dd <- addColumns(def, dd)
   }
 

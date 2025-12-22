@@ -6,7 +6,13 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "deno.enable": true,
+        "deno.enablePaths": [
+          "./apps/api",
+          "./packages/shared",
+          "./scripts",
+          "./deno.json"
+        ],
+        "deno.unstable": true,
         "deno.lint": true,
         "editor.defaultFormatter": "denoland.vscode-deno",
         "[vue]": {

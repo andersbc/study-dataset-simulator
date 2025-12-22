@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-run --allow-read --allow-write --allow-env main.ts",
-    "test": "deno test --allow-run --allow-net --allow-read --allow-write --allow-env"
+    "test": "LOG_DIR=./test_logs deno test -P"
+  },
+  "permissions": {
+    "default": {
+      "run": true,
+      "net": true,
+      "read": true,
+      "write": true,
+      "env": true
+    }
   },
   "exports": "./main.ts",
   "imports": {

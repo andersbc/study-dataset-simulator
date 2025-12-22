@@ -1,0 +1,10 @@
+{"timestamp":"2025-12-22T00:08:04.085Z","ip":"unknown","variables":[],"result":"failure","rows":0,"error":"Invalid Design: studyType must be \"case-control\", \"cohort\" or \"cross-sectional\" (was missing)","durationMs":1,"fullRequest":{"design":{"variables":[]},"n":10}}
+{"timestamp":"2025-12-22T00:08:04.087Z","ip":"127.0.0.1","variables":[],"result":"failure","rows":0,"error":"Check logs","durationMs":2,"fullRequest":{"design":{"variables":[]},"n":10}}
+{"timestamp":"2025-12-22T00:08:04.088Z","ip":"127.0.0.1","variables":[],"result":"failure","rows":0,"error":"Check logs","durationMs":0,"fullRequest":{}}
+{"timestamp":"2025-12-22T00:08:04.089Z","ip":"127.0.0.1","variables":[],"result":"failure","rows":0,"error":"Check logs","durationMs":0,"fullRequest":{}}
+{"timestamp":"2025-12-22T00:08:04.094Z","ip":"unknown","variables":[],"result":"failure","rows":0,"error":"Invalid Design: studyType must be \"case-control\", \"cohort\" or \"cross-sectional\" (was missing)","durationMs":0,"fullRequest":{"design":"not-an-array"}}
+{"timestamp":"2025-12-22T00:08:04.094Z","ip":"127.0.0.1","variables":[],"result":"failure","rows":0,"error":"Check logs","durationMs":1,"fullRequest":{"design":"not-an-array"}}
+{"timestamp":"2025-12-22T00:08:04.334Z","ip":"unknown","variables":["v1_unique_log_test"],"result":"success","rows":10,"error":"","durationMs":312,"fullRequest":null}
+{"timestamp":"2025-12-22T00:08:04.646Z","ip":"127.0.0.1","variables":[],"result":"success","rows":0,"durationMs":313}
+{"timestamp":"2025-12-22T00:08:04.647Z","ip":"unknown","variables":[],"result":"failure","rows":0,"error":"Sample size exceeds limit of 10000","durationMs":1,"fullRequest":{"design":{"variables":[]},"n":999888}}
+{"timestamp":"2025-12-22T00:08:04.648Z","ip":"127.0.0.1","variables":[],"result":"failure","rows":0,"error":"Check logs","durationMs":1,"fullRequest":{"design":{"variables":[]},"n":999888}}

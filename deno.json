@@ -13,9 +13,10 @@
     "dev:api": "deno task --cwd apps/api dev",
     "test:api": "deno task --cwd apps/api test",
     "sync:r": "deno run -A scripts/sync_r_logic.ts",
-    "dev:start": "docker compose -f docker-compose.dev.yml up --build",
-    "start:api": "deno task sync:r && docker compose -f docker-compose.dev.yml up --build api",
+    "dev:start": "mkdir -p apps/api/logs data .deno_cache && docker compose -f docker-compose.dev.yml up --build",
+    "start:api": "mkdir -p apps/api/logs data .deno_cache && deno task sync:r && docker compose -f docker-compose.dev.yml up --build api",
     "start:web": "docker compose -f docker-compose.dev.yml up --build web",
-    "deploy": "deno run -A scripts/deploy.ts"
+    "deploy": "deno run -A scripts/deploy.ts",
+    "test": "deno task test:api"
   }
 }
