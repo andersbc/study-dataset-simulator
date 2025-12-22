@@ -24,5 +24,8 @@ RUN chown -R deno:deno /app
 # Switch to non-root user
 USER deno
 
+# Set Log Directory to writable volume
+ENV LOG_DIR="/app/data/logs"
+
 # Run the API
 CMD ["deno", "run", "--allow-net", "--allow-run", "--allow-read", "--allow-write", "--allow-env", "main.ts"]
