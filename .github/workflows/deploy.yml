@@ -111,9 +111,9 @@ jobs:
             # Standard practice: The package settings on GitHub should allow public read access, OR we assume the user has logged in once manually.
             # Let's assume public read for now, which is default for public repositories.
 
-            # Ensure data directory exists and has correct permissions for the container user (1000)
+            # Ensure data directory exists and has correct permissions for the container user (1993 for Deno)
             mkdir -p data
-            chown 1000:1000 data
+            chown 1993:1993 data
 
             # Pull latest images from GHCR
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
