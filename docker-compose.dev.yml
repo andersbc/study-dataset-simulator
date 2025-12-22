@@ -8,9 +8,14 @@ services:
     volumes:
       - ./apps/api:/app/apps/api
       - ./packages:/app/packages
+      - ./.deno_cache:/app/.deno_cache
+      - ./data:/app/data
     working_dir: /app/apps/api
     env_file:
       - .env
+    environment:
+      - DENO_DIR=/app/.deno_cache
+    user: "1000:1000"
     # Run in watch mode. 
     command: deno task dev
 

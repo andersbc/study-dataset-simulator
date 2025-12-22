@@ -137,8 +137,25 @@ export function buildDependencyGraph(design: StudyDesign) {
   const dependencies = new Map<string, string[]>();
   const nodeEffects = new Map<string, typeof design.effects>();
 
+  // Create a set of all valid node names for quick lookup
+  const validNodeNames = new Set<string>();
+  if (design.variables) {
+    design.variables.forEach(v => {
+      if (v.kind === 'variable') {
+        validNodeNames.add(v.name);
+      } else if (v.kind === 'instrument' && v.items) {
+        v.items.forEach(i => validNodeNames.add(i.name));
+      }
+    });
+  }
+
   if (design.effects) {
     design.effects.forEach(eff => {
+      // Validate source and target existence
+      if (!validNodeNames.has(eff.source) || !validNodeNames.has(eff.target)) {
+        return; // Skip invalid effect
+      }
+
       const deps = dependencies.get(eff.target) || [];
       if (!deps.includes(eff.source)) {
         deps.push(eff.source);

@@ -17,5 +17,9 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+    user: "1000:1000"
     env_file:
       - .env
+    environment:
+      - LOG_DIR=/app/data/logs
+      - DENO_DIR=/tmp/deno_dir

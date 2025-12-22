@@ -42,8 +42,36 @@ export const useStudyDesignActions = () => {
   }
 
   const updateVariable = (index: number, variable: StudyNode) => {
+    const oldVariable = design.value.variables?.[index]
+
     if (design.value.variables) {
       design.value.variables[index] = variable
+    }
+
+    if (oldVariable && design.value.effects) {
+      const updateRef = (oldN: string, newN: string) => {
+        design.value.effects?.forEach(e => {
+          if (e.source === oldN) e.source = newN
+          if (e.target === oldN) e.target = newN
+        })
+      }
+
+      if (oldVariable.name && variable.name && oldVariable.name !== variable.name) {
+        updateRef(oldVariable.name, variable.name)
+      }
+
+      if (oldVariable.kind === 'instrument' && variable.kind === 'instrument') {
+        const oldItems = oldVariable.items || []
+        const newItems = variable.items || []
+        const newMap = new Map(newItems.map((i: any) => [i.id, i]))
+
+        oldItems.forEach((oldItem: any) => {
+          const newItem = newMap.get(oldItem.id)
+          if (newItem && oldItem.name !== newItem.name) {
+            updateRef(oldItem.name, newItem.name)
+          }
+        })
+      }
     }
   }
 
