@@ -11,12 +11,19 @@ const LOG_CONFIG = {
   KEEP_ERRORS: true,
 };
 
+// Helper: Resolve Log Directory
+const getLogDir = () => {
+  const env = Deno.env.get("LOG_DIR");
+  if (env) return env;
+  return new URL('./logs', import.meta.url).pathname;
+};
+
 let currentLogEntries = 0;
 
 // Log Rotation Logic
 async function rotateLogs() {
   try {
-    const logDir = new URL('./logs', import.meta.url).pathname;
+    const logDir = getLogDir();
     const currentLog = `${logDir}/requests.jsonl`;
 
     // 1. Rotate current log (unconditional if called, assuming threshold met)
@@ -71,7 +78,7 @@ async function rotateLogs() {
 // Initialize entry count
 async function initLogCount() {
   try {
-    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+    const logPath = `${getLogDir()}/requests.jsonl`;
     const text = await Deno.readTextFile(logPath);
     // Count non-empty lines
     currentLogEntries = text.split('\n').filter(line => line.trim()).length;
@@ -134,8 +141,9 @@ app.use('/generate', async (c, next) => {
     };
 
     // Write
-    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
-    await Deno.mkdir(new URL('./logs', import.meta.url).pathname, { recursive: true });
+    const logDir = getLogDir();
+    const logPath = `${logDir}/requests.jsonl`;
+    await Deno.mkdir(logDir, { recursive: true });
     await Deno.writeTextFile(logPath, JSON.stringify(logEntry) + '\n', { append: true });
 
     // Increment and Check Rotation
@@ -404,8 +412,8 @@ app.post('/generate', async (c) => {
     try {
       const logLine = JSON.stringify(logEntry) + '\n';
       // Resolve path relative to this file
-      const logDir = new URL('./logs', import.meta.url).pathname;
-      const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+      const logDir = getLogDir();
+      const logPath = `${logDir}/requests.jsonl`;
 
       // Ensure dir exists (safe to run concurrently usually, or ignore error)
       try {
@@ -427,7 +435,7 @@ if (import.meta.main) {
 
 app.get('/logs/download', async (c) => {
   try {
-    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+    const logPath = `${getLogDir()}/requests.jsonl`;
     const file = await Deno.open(logPath);
 
     c.header('Content-Type', 'application/json');
@@ -441,7 +449,7 @@ app.get('/logs/download', async (c) => {
 
 app.get('/logs', async (c) => {
   try {
-    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+    const logPath = `${getLogDir()}/requests.jsonl`;
     const content = await Deno.readTextFile(logPath);
     const lines = content.trim().split('\n');
     // Return all lines reversed (newest first)
@@ -464,7 +472,7 @@ app.delete('/logs', async (c) => {
   }
 
   try {
-    const logPath = new URL('./logs/requests.jsonl', import.meta.url).pathname;
+    const logPath = `${getLogDir()}/requests.jsonl`;
     await Deno.writeTextFile(logPath, ''); // Truncate file
     currentLogEntries = 0; // Reset counter
     return c.json({ success: true });

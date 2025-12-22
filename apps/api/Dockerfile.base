@@ -19,3 +19,7 @@ RUN apt-get update && apt-get install -y curl unzip \
   && mv deno /usr/local/bin/deno \
   && rm deno.zip \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 4. Create Deno User
+RUN groupadd --gid 1993 deno \
+  && useradd --uid 1993 --gid deno --shell /bin/bash --create-home deno

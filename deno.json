@@ -16,6 +16,7 @@
     "dev:start": "docker compose -f docker-compose.dev.yml up --build",
     "start:api": "deno task sync:r && docker compose -f docker-compose.dev.yml up --build api",
     "start:web": "docker compose -f docker-compose.dev.yml up --build web",
-    "deploy": "deno run -A scripts/deploy.ts"
+    "deploy": "deno run -A scripts/deploy.ts",
+    "test": "deno task test:api"
   }
 }

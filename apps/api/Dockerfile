@@ -18,5 +18,11 @@ WORKDIR /app/apps/api
 # Expose port
 EXPOSE 8000
 
+# Set directory permissions for deno user
+RUN chown -R deno:deno /app
+
+# Switch to non-root user
+USER deno
+
 # Run the API
 CMD ["deno", "run", "--allow-net", "--allow-run", "--allow-read", "--allow-write", "--allow-env", "main.ts"]
