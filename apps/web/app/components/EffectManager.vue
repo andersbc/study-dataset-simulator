@@ -19,11 +19,15 @@
     <v-sheet class="pa-4 rounded" color="form-surface">
       <div class="text-subtitle-2 mb-2">New Relationship</div>
       <div class="d-flex align-center gap-4">
-        <v-select v-model="newEffect.source" :items="variableNames" label="Variable A" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"></v-select>
 
-        <v-select v-model="newEffect.target" :items="variableNames" label="Variable B" density="compact" hide-details
-          class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"></v-select>
+        <v-select v-model="newEffect.source" :items="variableNames" label="Variable A" density="compact" hide-details
+          class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"
+          placeholder="Select Source"></v-select>
+
+        <v-select v-model="newEffect.target" :items="availableTargetOptions" label="Variable B" density="compact"
+          hide-details class="flex-grow-1 mr-2" variant="outlined" item-title="title" item-value="value"
+          :disabled="!newEffect.source" :placeholder="!newEffect.source ? 'Select Source First' : 'Select Target'">
+        </v-select>
 
         <v-number-input v-model="newEffect.coefficient" label="Correlation (r)" :min="-1" :max="1" :step="0.1"
           control-variant="split" density="compact" hide-details class="mr-2" style="max-width: 220px"
@@ -37,7 +41,7 @@
 
 <script setup lang="ts">
 import { VNumberInput } from 'vuetify/components/VNumberInput'
-import { EFFECT_CORRELATION, type Effect } from '@sim-site/shared'
+import { EFFECT_CORRELATION, type Effect, getAvailableTargets } from '@sim-site/shared'
 
 const design = useStudyDesign()
 
@@ -61,11 +65,25 @@ const newEffect = ref<{ source: string, target: string, coefficient: number }>({
   coefficient: 0.5
 })
 
+
+// Filter target options based on selected source to prevent cycles
+const availableTargetOptions = computed(() => {
+  const allNames = variableNames.value.map(v => v.value)
+  const validTargetNames = new Set(getAvailableTargets(
+    newEffect.value.source,
+    allNames,
+    design.value.effects || []
+  ))
+
+  return variableNames.value.filter(v => validTargetNames.has(v.value))
+})
+
 const isValid = computed(() => {
-  return newEffect.value.source &&
-    newEffect.value.target &&
-    newEffect.value.source !== newEffect.value.target &&
-    newEffect.value.coefficient >= -1 &&
+  // Source validity is now guaranteed by the dropdown filter, but double check
+  if (!newEffect.value.source || !newEffect.value.target) return false;
+  if (newEffect.value.source === newEffect.value.target) return false;
+
+  return newEffect.value.coefficient >= -1 &&
     newEffect.value.coefficient <= 1
 })
 
