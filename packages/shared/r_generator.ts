@@ -93,7 +93,6 @@ export function generateRScript(design: StudyDesign, n: number = 100): string {
   lines.push(`# --- Execution ---`);
 
   lines.push(`dd <- generate_study(n_obs, study_design)`);
-
   lines.push(``);
   lines.push(`write.csv(dd, stdout(), row.names=FALSE, quote=FALSE)`);
 
@@ -153,9 +152,11 @@ export function buildDependencyGraph(design: StudyDesign) {
     design.effects.forEach(eff => {
       // Validate source and target existence
       if (!validNodeNames.has(eff.source) || !validNodeNames.has(eff.target)) {
+        console.warn(`[R-Gen] Effect ignored due to missing variable: ${eff.source} -> ${eff.target}. Valid nodes:`, Array.from(validNodeNames));
         return; // Skip invalid effect
       }
 
+      console.log(`[R-Gen] dependency found: ${eff.target} depends on ${eff.source}`);
       const deps = dependencies.get(eff.target) || [];
       if (!deps.includes(eff.source)) {
         deps.push(eff.source);
@@ -171,12 +172,16 @@ export function buildDependencyGraph(design: StudyDesign) {
 }
 
 export function sortNodes(nodes: SimNode[], dependencies: Map<string, string[]>, nameToNode: Map<string, SimNode>): SimNode[] {
+  console.log(`[R-Gen] Sorting ${nodes.length} nodes...`);
   const sortedNodes: SimNode[] = [];
   const visited = new Set<string>();
   const tempVisited = new Set<string>();
 
   const visit = (name: string) => {
-    if (tempVisited.has(name)) return; // Cycle detected
+    if (tempVisited.has(name)) {
+      console.warn(`[R-Gen] Cycle detected involving ${name}`);
+      return;
+    }
     if (visited.has(name)) return;
 
     tempVisited.add(name);
@@ -199,5 +204,6 @@ export function sortNodes(nodes: SimNode[], dependencies: Map<string, string[]>,
     if (!visited.has(node.name)) visit(node.name);
   });
 
+  console.log(`[R-Gen] Sorted order: ${sortedNodes.map(n => n.name).join(' > ')}`);
   return sortedNodes;
 }
