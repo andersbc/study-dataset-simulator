@@ -116,11 +116,11 @@ jobs:
             chown 1993:1993 data
 
             # Pull latest images from GHCR
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml pull
 
             # Restart containers using the pulled images
             # Important: WITHOUT --build
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml up -d
 
             # Prune unused images to save space
             docker image prune -f
