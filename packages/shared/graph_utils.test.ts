@@ -110,3 +110,57 @@ Deno.test("getAvailableTargets - Indirect Cycle Prevention", () => {
   assertEquals(targetsForC.includes("A"), false);
   assertEquals(targetsForC.includes("B"), false);
 });
+
+import { getConflictingNodes } from "./graph_utils.ts";
+
+Deno.test("getConflictingNodes - Triangle Conflict", () => {
+  const nodes = ["A", "B", "C"];
+  // A -> B (+)
+  // B -> C (-)
+  // A -> C (+)
+  // Path 1: A->C is (+)
+  // Path 2: A->B->C is (+ * - = -)
+  // Conflict at C
+  const effects: StudyEffect[] = [
+    createEffect("A", "B"), // +0.5
+    { ...createEffect("B", "C"), coefficient: -0.5 },
+    createEffect("A", "C")  // +0.5
+  ];
+
+  const conflicts = getConflictingNodes(nodes, effects);
+  assertEquals(conflicts, ["C"]);
+});
+
+Deno.test("getConflictingNodes - No Conflict (Consistent)", () => {
+  const nodes = ["A", "B", "C"];
+  // A -> B (+)
+  // B -> C (+)
+  // A -> C (+)
+  // All paths positive
+  const effects: StudyEffect[] = [
+    createEffect("A", "B"),
+    { ...createEffect("B", "C"), coefficient: 0.5 },
+    createEffect("A", "C")
+  ];
+
+  const conflicts = getConflictingNodes(nodes, effects);
+  assertEquals(conflicts, []);
+});
+
+Deno.test("getConflictingNodes - Indirect Conflict", () => {
+  const nodes = ["A", "B", "C", "D"];
+  // A -> B (+)
+  // B -> C (-)
+  // C -> D (+) => Path A->D is (-)
+  // A -> D (+) => Path A->D is (+)
+  // Conflict at D
+  const effects: StudyEffect[] = [
+    createEffect("A", "B"),
+    { ...createEffect("B", "C"), coefficient: -0.5 },
+    createEffect("C", "D"),
+    createEffect("A", "D")
+  ];
+
+  const conflicts = getConflictingNodes(nodes, effects);
+  assertEquals(conflicts, ["D"]);
+});

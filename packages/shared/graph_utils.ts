@@ -131,3 +131,74 @@ export function getAvailableTargets(
       return true;
     });
 }
+
+/**
+ * Identifies nodes that have "conflicting" inputs from the same ancestor.
+ * A conflict is defined as having at least one path with a positive total effect 
+ * AND at least one path with a negative total effect from the same ancestor.
+ * 
+ * @param allNodeNames - List of all nodes
+ * @param existingEffects - List of effects
+ * @returns Array of node IDs that have conflicts
+ */
+export function getConflictingNodes(
+  allNodeNames: string[],
+  existingEffects: StudyEffect[]
+): string[] {
+  const conflictingNodes: string[] = [];
+
+  // 1. Build Adjacency List with Edge Weights (Signs)
+  const adj = new Map<string, { target: string, sign: number }[]>();
+
+  for (const eff of existingEffects) {
+    if (!adj.has(eff.source)) adj.set(eff.source, []);
+    const sign = eff.coefficient >= 0 ? 1 : -1;
+    adj.get(eff.source)?.push({ target: eff.target, sign });
+  }
+
+  // 2. For each node, find all paths from all ancestors
+  for (const targetNode of allNodeNames) {
+    const hasIncoming = existingEffects.some(e => e.target === targetNode);
+    if (!hasIncoming) continue;
+
+    for (const sourceNode of allNodeNames) {
+      if (sourceNode === targetNode) continue;
+
+      let hasPositivePath = false;
+      let hasNegativePath = false;
+
+      const stack: { current: string, currentSign: number }[] = [{ current: sourceNode, currentSign: 1 }];
+      let pathCount = 0;
+
+      while (stack.length > 0) {
+        const { current, currentSign } = stack.pop()!;
+
+        if (current === targetNode) {
+          if (currentSign > 0) hasPositivePath = true;
+          if (currentSign < 0) hasNegativePath = true;
+
+          if (hasPositivePath && hasNegativePath) break;
+          continue;
+        }
+
+        pathCount++;
+        if (pathCount > 1000) break;
+
+        const neighbors = adj.get(current) || [];
+        for (const edge of neighbors) {
+          stack.push({
+            current: edge.target,
+            currentSign: currentSign * edge.sign
+          });
+        }
+      }
+
+      if (hasPositivePath && hasNegativePath) {
+        conflictingNodes.push(targetNode);
+        break;
+      }
+    }
+  }
+
+  return conflictingNodes;
+}

@@ -5,8 +5,14 @@
       <svg :width="width" :height="height" ref="svgRef" v-if="nodes.length > 0" class="graph-svg">
         <!-- Definitions for markers (arrowheads) -->
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" class="edge-marker" />
+          <marker id="arrowhead-default" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="edge-marker-default" />
+          </marker>
+          <marker id="arrowhead-positive" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="edge-marker-positive" />
+          </marker>
+          <marker id="arrowhead-negative" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="edge-marker-negative" />
           </marker>
           <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.2" />
@@ -15,17 +21,24 @@
 
         <!-- 1. Edge Paths (Bottom) -->
         <g v-for="edge in edges" :key="`path-${edge.id}`" class="edge-group">
-          <path :d="getEdgePath(edge)" class="edge-path" marker-end="url(#arrowhead)" fill="none" />
+          <path :d="getEdgePath(edge)" class="edge-path"
+            :class="{ 'edge-positive': edge.coefficient > 0, 'edge-negative': edge.coefficient < 0 }"
+            :marker-end="edge.coefficient > 0 ? 'url(#arrowhead-positive)' : edge.coefficient < 0 ? 'url(#arrowhead-negative)' : 'url(#arrowhead-default)'"
+            fill="none" />
           <!-- Invisible wide path for easier hovering -->
           <path :d="getEdgePath(edge)" stroke="transparent" stroke-width="15" fill="none" />
         </g>
 
+
         <!-- 2. Nodes (Middle) -->
         <g v-for="node in layoutNodes" :key="node.id" :transform="`translate(${node.x}, ${node.y})`">
-          <rect x="-40" y="-20" width="80" height="40" rx="8" class="node-rect" filter="url(#shadow)" />
+          <rect x="-40" y="-20" width="80" height="40" rx="8" class="node-rect"
+            :class="{ 'node-conflict': node.hasConflict }" filter="url(#shadow)" />
           <text x="0" y="5" text-anchor="middle" font-size="12" font-weight="600" class="node-text">
             {{ formatName(node.name) }}
           </text>
+          <!-- Warning Icon for conflicts -->
+          <text v-if="node.hasConflict" x="35" y="-15" font-size="12" fill="#FF9800" font-weight="bold">!</text>
         </g>
 
         <!-- 3. Edge Labels (Top) -->
@@ -49,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getConflictingNodes } from '@sim-site/shared'
 
 const design = useStudyDesign()
 const width = 800
@@ -61,6 +75,7 @@ interface LayoutNode {
   level: number
   x: number
   y: number
+  hasConflict?: boolean
 }
 
 const formatName = (name: string) => {
@@ -71,16 +86,21 @@ const formatName = (name: string) => {
 const layoutNodes = computed((): LayoutNode[] => {
   if (!design.value.variables) return []
 
+  const allNames = design.value.variables.map(v => v.name)
+  const effects = design.value.effects || []
+  const conflictedSet = new Set(getConflictingNodes(allNames, effects))
+
   const nodes = design.value.variables.map(v => ({
     id: v.name,
     name: v.name,
     level: 0,
     x: 0,
-    y: 0
+    y: 0,
+    hasConflict: conflictedSet.has(v.name)
   }))
 
   const nodeMap = new Map(nodes.map(n => [n.id, n]))
-  const effects = design.value.effects || []
+  // const effects = design.value.effects || [] // Removed duplicate declaration
 
   // Reset levels
   nodes.forEach(n => n.level = 0)
@@ -187,6 +207,12 @@ const getEdgeLabelPos = (edge: any) => {
   transition: all 0.3s ease;
 }
 
+.node-conflict {
+  stroke: rgb(var(--v-theme-warning)) !important;
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 4px rgba(var(--v-theme-warning), 0.5));
+}
+
 .node-text {
   fill: rgb(var(--v-theme-on-surface));
 }
@@ -198,9 +224,30 @@ const getEdgeLabelPos = (edge: any) => {
   transition: all 0.3s ease;
 }
 
-.edge-marker {
+.edge-positive {
+  stroke: rgb(var(--v-theme-success));
+  opacity: 0.8;
+}
+
+.edge-negative {
+  stroke: rgb(var(--v-theme-error));
+  stroke-dasharray: 5, 3;
+  opacity: 0.8;
+}
+
+.edge-marker-default {
   fill: rgb(var(--v-theme-on-surface));
   opacity: 0.6;
+}
+
+.edge-marker-positive {
+  fill: rgb(var(--v-theme-success));
+  opacity: 0.8;
+}
+
+.edge-marker-negative {
+  fill: rgb(var(--v-theme-error));
+  opacity: 0.8;
 }
 
 .edge-label {
