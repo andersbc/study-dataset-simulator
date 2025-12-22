@@ -165,7 +165,10 @@ export const useStudyHistory = () => {
     if (!canUndo.value) return
     isUndoing = true
     historyIndex.value--
-    design.value = JSON.parse(history.value[historyIndex.value])
+    const state = history.value[historyIndex.value]
+    if (state) {
+      design.value = JSON.parse(state)
+    }
     // Tiny timeout to let watcher ignore this change
     setTimeout(() => { isUndoing = false }, 0)
   }
@@ -174,7 +177,10 @@ export const useStudyHistory = () => {
     if (!canRedo.value) return
     isUndoing = true
     historyIndex.value++
-    design.value = JSON.parse(history.value[historyIndex.value])
+    const state = history.value[historyIndex.value]
+    if (state) {
+      design.value = JSON.parse(state)
+    }
     setTimeout(() => { isUndoing = false }, 0)
   }
 

@@ -363,8 +363,8 @@ const addScale = () => {
   }
 }
 
-const removeScale = (index: number) => {
-  localVar.value.scales?.splice(index, 1)
+const removeScale = (index: number | string) => {
+  localVar.value.scales?.splice(Number(index), 1)
 }
 
 const getAvailableItemsForScale = (scale: any) => {
